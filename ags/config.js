@@ -2,7 +2,7 @@ import Cairo from "cairo";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 const { Window, Box, Label, Icon } = Widget;
-const { exec, execAsync, ensureDirectory, HOME, readFile, writeFile } = Utils;
+const { exec, execAsync, ensureDirectory, HOME, readFile, writeFile, subprocess } = Utils;
 
 const CACHE_DIR = `${GLib.get_user_cache_dir()}/wfinfo/ags`;
 const SCREENSHOT_PATH = `${CACHE_DIR}/screenshot.png`;
@@ -94,27 +94,23 @@ const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${ge
 if (fileExists(logPath)) {
     console.log(`[INFO] Warframe EE.log path: ${logPath}`);
 
-    const rewards = Variable(null, {
-        listen: [
-            `tail -f '${logPath}'`,
-            out => {
-                if (
-                    out.includes("Pause countdown done") ||
-                    out.includes("Got rewards") ||
-                    out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
-                ) {
-                    exec(`grimblast save active ${SCREENSHOT_PATH}`);
-                    const pyOut = execPython("main", SCREENSHOT_PATH);
-                    // Update databases async
-                    execPython("database", "", true).catch(print);
-                    try {
-                        return JSON.parse(pyOut);
-                    } catch {
-                        console.warn(`Unable to parse script output as JSON: ${pyOut}`);
-                    }
-                }
-            },
-        ],
+    const rewards = Variable();
+    subprocess(["tail", "-f", logPath], out => {
+        if (
+            out.includes("Pause countdown done") ||
+            out.includes("Got rewards") ||
+            out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
+        ) {
+            exec(`grimblast save active ${SCREENSHOT_PATH}`);
+            const pyOut = execPython("main", SCREENSHOT_PATH);
+            // Update databases async
+            execPython("database", "", true).catch(print);
+            try {
+                rewards.setValue(JSON.parse(pyOut));
+            } catch {
+                console.warn(`Unable to parse script output as JSON: ${pyOut}`);
+            }
+        }
     });
 
     const RewardsDisplay = () =>
@@ -139,7 +135,8 @@ if (fileExists(logPath)) {
 
                 let timeout;
                 self.hook(rewards, () => {
-                    if (rewards.value) {
+                    if (rewards.value && rewards.value.length) {
+                        console.log("Got rewards:", rewards.value);
                         App.openWindow(self.name);
 
                         // Try close when reward choosing over or in 15 seconds

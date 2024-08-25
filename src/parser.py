@@ -1,19 +1,18 @@
 import re
 from pathlib import Path
-from shutil import rmtree
 
 import cv2
 import numpy as np
 import pytesseract as tess
 from PIL.Image import Image
+from platformdirs import user_cache_path
 
 import database as db
 from theme import Theme
 
-# Define temp dir path and ensure it exists
-_TEMP_DIR = Path(__file__).parent.parent / "tmp"
-rmtree(_TEMP_DIR)
-_TEMP_DIR.mkdir()
+# Define save dir path and ensure it exists
+_SAVE_DIR = user_cache_path("wfinfo") / "images"
+_SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
 _REWARD_WIDTH = 242  # Per player
 _REWARD_TOTAL_WIDTH = _REWARD_WIDTH * 4
@@ -38,7 +37,7 @@ def save_image(image: Image | np.ndarray, cv: bool = False) -> Path:
 
     global _tmp_count
 
-    save_path = _TEMP_DIR / f"{_tmp_count}.png"
+    save_path = _SAVE_DIR / f"{_tmp_count}.png"
     _tmp_count += 1
 
     if cv:

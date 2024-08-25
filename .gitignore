@@ -1,7 +1,3 @@
-# Generated stuff
-/tmp/
-/res/
-
 # Python compiled stuff
 __pycache__/
 *.pyc

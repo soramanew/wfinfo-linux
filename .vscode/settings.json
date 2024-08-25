@@ -15,6 +15,7 @@
         "ndarray",
         "Neuroptics",
         "OROKIN",
+        "platformdirs",
         "Preprocesses",
         "putpixel",
         "pytesseract",

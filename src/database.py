@@ -1,11 +1,12 @@
 import json
 import time
 from http.client import HTTPSConnection
-from pathlib import Path
+
+from platformdirs import user_cache_path
 
 # Define resource path and ensure it exists
-_RESOURCE_DIR = Path(__file__).parent.parent / "res"
-_RESOURCE_DIR.mkdir(exist_ok=True)
+_RESOURCE_DIR = user_cache_path("wfinfo") / "resources"
+_RESOURCE_DIR.mkdir(parents=True, exist_ok=True)
 
 _PRICES_PATH = _RESOURCE_DIR / "prices.json"
 _CHARS_PATH = _RESOURCE_DIR / "whitelist_chars.txt"

@@ -104,7 +104,12 @@ if (fileExists(logPath)) {
     //                 out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
     //             ) {
     //                 exec(`grimblast save active ${SCREENSHOT_PATH}`);
-    //                 return JSON.parse(execPython("main", SCREENSHOT_PATH));
+    //                 const pyOut = execPython("main", SCREENSHOT_PATH);
+    //                 try {
+    //                     return JSON.parse(pyOut);
+    //                 } catch {
+    //                     console.warn(`Unable to parse script output as JSON: ${pyOut}`);
+    //                 }
     //             }
     //         },
     //     ],

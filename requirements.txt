@@ -1,5 +1,4 @@
 numpy==2.1.0
-opencv-python==4.10.0.84
 packaging==24.1
 pillow==10.4.0
 platformdirs==4.2.2

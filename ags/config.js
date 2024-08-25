@@ -2,7 +2,7 @@ import Cairo from "cairo";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 const { Window, Box, Label, Icon } = Widget;
-const { exec, ensureDirectory, HOME } = Utils;
+const { exec, ensureDirectory, HOME, readFile, writeFile } = Utils;
 
 const CACHE_DIR = `${GLib.get_user_cache_dir()}/wfinfo/ags`;
 const SCREENSHOT_PATH = `${App.configDir}/../test-images/1.png`; // `${CACHE_DIR}/screenshot.png`;
@@ -35,8 +35,25 @@ const hookWindowOpen = (self, fn) =>
         "window-toggled"
     );
 
-const defaultLogPath = `${HOME}/.local/share/Steam/steamapps/compatdata/230410/pfx/drive_c/users/steamuser/AppData/Local/Warframe/EE.log`;
-const logPath = fileExists(defaultLogPath) ? defaultLogPath : findEELog();
+const getLogPath = () => {
+    const cachePath = `${CACHE_DIR}/ee_log_path.txt`;
+    const defaultLogPath = `${HOME}/.local/share/Steam/steamapps/compatdata/230410/pfx/drive_c/users/steamuser/AppData/Local/Warframe/EE.log`;
+    const cachedLogPath = readFile(cachePath);
+
+    // Use cached first, then try default and finally search
+    let logPath = "";
+    if (fileExists(cachedLogPath)) logPath = cachedLogPath;
+    else if (fileExists(defaultLogPath)) logPath = defaultLogPath;
+    else {
+        const foundLogPath = findEELog();
+        if (fileExists(foundLogPath)) logPath = foundLogPath;
+    }
+
+    writeFile(logPath, cachePath);
+    return logPath;
+};
+
+const logPath = getLogPath();
 
 const PriceDisplay = ({ platinum, ducats }) =>
     Box({
@@ -75,7 +92,7 @@ const RewardDisplay = (reward, i) =>
 const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${getDimensions().bottom * 1.5}px;`));
 
 if (fileExists(logPath)) {
-    console.log(`Warframe EE.log path: ${logPath}`);
+    console.log(`[INFO] Warframe EE.log path: ${logPath}`);
 
     // const rewards = Variable(null, {
     //     listen: [

@@ -5,7 +5,7 @@ const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, ensureDirectory, HOME, readFile, writeFile } = Utils;
 
 const CACHE_DIR = `${GLib.get_user_cache_dir()}/wfinfo/ags`;
-const SCREENSHOT_PATH = `${App.configDir}/../test-images/1.png`; // `${CACHE_DIR}/screenshot.png`;
+const SCREENSHOT_PATH = `${CACHE_DIR}/screenshot.png`;
 
 const fileExists = filePath => Gio.File.new_for_path(filePath).query_exists(null);
 const findEELog = () =>
@@ -94,29 +94,28 @@ const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${ge
 if (fileExists(logPath)) {
     console.log(`[INFO] Warframe EE.log path: ${logPath}`);
 
-    // const rewards = Variable(null, {
-    //     listen: [
-    //         `tail -f '${logPath}'`,
-    //         out => {
-    //             if (
-    //                 out.includes("Pause countdown done") ||
-    //                 out.includes("Got rewards") ||
-    //                 out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
-    //             ) {
-    //                 exec(`grimblast save active ${SCREENSHOT_PATH}`);
-    //                 const pyOut = execPython("main", SCREENSHOT_PATH);
-    //                 // Update databases async
-    //                 execPython("database", "", true).catch(print);
-    //                 try {
-    //                     return JSON.parse(pyOut);
-    //                 } catch {
-    //                     console.warn(`Unable to parse script output as JSON: ${pyOut}`);
-    //                 }
-    //             }
-    //         },
-    //     ],
-    // });
-    const rewards = Variable(JSON.parse(execPython("main", SCREENSHOT_PATH)));
+    const rewards = Variable(null, {
+        listen: [
+            `tail -f '${logPath}'`,
+            out => {
+                if (
+                    out.includes("Pause countdown done") ||
+                    out.includes("Got rewards") ||
+                    out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
+                ) {
+                    exec(`grimblast save active ${SCREENSHOT_PATH}`);
+                    const pyOut = execPython("main", SCREENSHOT_PATH);
+                    // Update databases async
+                    execPython("database", "", true).catch(print);
+                    try {
+                        return JSON.parse(pyOut);
+                    } catch {
+                        console.warn(`Unable to parse script output as JSON: ${pyOut}`);
+                    }
+                }
+            },
+        ],
+    });
 
     const RewardsDisplay = () =>
         Box().hook(rewards, self => {

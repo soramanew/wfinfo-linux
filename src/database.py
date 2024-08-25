@@ -1,4 +1,5 @@
 import json
+import sys
 import time
 from http.client import HTTPSConnection
 
@@ -131,22 +132,27 @@ def _process_prices(
     return new_prices, "".join(chars), list(endings), list(words)
 
 
-def update_from_cache():
-    """Updates the databases from the cache."""
+def load_dbs() -> None:
+    """Loads the databases from the cache if they exist, otherwise updates them."""
 
-    global prices, whitelist_chars, item_endings, words
+    if (
+        _PRICES_PATH.exists()
+        and _CHARS_PATH.exists()
+        and _ENDINGS_PATH.exists()
+        and _WORDS_PATH.exists()
+    ):
+        global prices, whitelist_chars, item_endings, words
 
-    prices = json.loads(_PRICES_PATH.read_text())
-    whitelist_chars = _CHARS_PATH.read_text()
-    item_endings = _ENDINGS_PATH.read_text().split()
-    words = _WORDS_PATH.read_text().split()
+        prices = json.loads(_PRICES_PATH.read_text())
+        whitelist_chars = _CHARS_PATH.read_text()
+        item_endings = _ENDINGS_PATH.read_text().split()
+        words = _WORDS_PATH.read_text().split()
+    else:
+        update_dbs()
 
 
-def update_dbs():
-    """Updates databases if they were last updated before the threshold interval.
-
-    Otherwise reads from cache.
-    """
+def update_dbs() -> None:
+    """Updates databases if they do not exist or were last updated before the threshold interval."""
 
     now = time.time()
     if (
@@ -158,12 +164,13 @@ def update_dbs():
         )
         or json.loads(_PRICES_PATH.read_text())["updated"] < now - _UPDATE_THRESHOLD
     ):
-        # Try get price data, if unable to then update from cache
+        # Try get price data, if unable to then exit
         try:
             price_data = _get_remote_data("prices")
             filtered_items = _get_remote_data("filtered_items")
         except Exception:
-            update_from_cache()
+            print("Exiting.")
+            sys.exit()
         else:
             global prices, whitelist_chars, item_endings, words
 
@@ -177,5 +184,10 @@ def update_dbs():
             _CHARS_PATH.write_text(whitelist_chars)
             _ENDINGS_PATH.write_text("\n".join(item_endings))
             _WORDS_PATH.write_text("\n".join(words))
-    else:
-        update_from_cache()
+
+
+# Update dbs if called as main script otherwise load dbs
+if __name__ == "__main__":
+    update_dbs()
+else:
+    load_dbs()

@@ -2,7 +2,7 @@ import Cairo from "cairo";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 const { Window, Box, Label, Icon } = Widget;
-const { exec, ensureDirectory, HOME, readFile, writeFile } = Utils;
+const { exec, execAsync, ensureDirectory, HOME, readFile, writeFile } = Utils;
 
 const CACHE_DIR = `${GLib.get_user_cache_dir()}/wfinfo/ags`;
 const SCREENSHOT_PATH = `${App.configDir}/../test-images/1.png`; // `${CACHE_DIR}/screenshot.png`;
@@ -12,8 +12,8 @@ const findEELog = () =>
     exec(
         `bash -c "find ${HOME} -type f -name 'EE.log' -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d ' ' -f 2"`
     );
-const execPython = (script, args = "") =>
-    exec(`${App.configDir}/../.venv/bin/python ${App.configDir}/../src/${script}.py ${args}`);
+const execPython = (script, args = "", async = false) =>
+    (async ? execAsync : exec)(`${App.configDir}/../.venv/bin/python ${App.configDir}/../src/${script}.py ${args}`);
 
 const getDimensions = () => {
     // For multi-monitor, get monitor window is on
@@ -105,6 +105,8 @@ if (fileExists(logPath)) {
     //             ) {
     //                 exec(`grimblast save active ${SCREENSHOT_PATH}`);
     //                 const pyOut = execPython("main", SCREENSHOT_PATH);
+    //                 // Update databases async
+    //                 execPython("database", "", true).catch(print);
     //                 try {
     //                     return JSON.parse(pyOut);
     //                 } catch {

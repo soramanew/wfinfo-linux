@@ -103,7 +103,7 @@ if (fileExists(logPath)) {
             // Unbind then rebind to avoid duplicate binds
             execAsync(`hyprctl keyword unbind '${keybind}'`)
                 .then(() =>
-                    execAsync(`hyprctl keyword bind '${keybind},exec,${App.configDir}/../trigger.sh'`).catch(print)
+                    execAsync(`hyprctl keyword bindn '${keybind},exec,${App.configDir}/../trigger.sh'`).catch(print)
                 )
                 .catch(print);
         }

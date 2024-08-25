@@ -41,7 +41,7 @@ and trigger when it detects a reward screen. As Warframe stores its logs in a bu
 when the buffer is full, the auto detection may be inconsistent.
 
 The reward display can be manually triggered while running via the `trigger.sh` script in the base directory. The
-program will automatically create a shortcut for the trigger script (`Ctrl+F2` by default) on start. This WILL remove
+program will automatically create a shortcut for the trigger script (`F2` by default) on start. This WILL remove
 any prior binds for that key.
 
 ## Configuration

@@ -119,6 +119,7 @@ def preprocess_image(image: Image) -> np.ndarray:
     """
 
     # Strip colours except text
+    image = Theme.strip(image)
 
     # Resize image
     image = resize_image(image, 256)
@@ -229,6 +230,6 @@ def parse_image(image: Image) -> list[str]:
 
         rewards.append(reward.strip())
 
-    print(rewards)
+    # print(rewards)
 
     return rewards

@@ -180,6 +180,4 @@ def parse_image(image: Image) -> list[str]:
 
         rewards.append(reward.strip())
 
-    # print(rewards)
-
     return rewards

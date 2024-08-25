@@ -11,8 +11,11 @@
         "GRINEER",
         "hexpand",
         "hpack",
+        "hyprctl",
+        "Hyprland",
         "imread",
         "imwrite",
+        "keybind",
         "keymode",
         "ndarray",
         "Neuroptics",
@@ -34,6 +37,7 @@
         "vpack",
         "Warframe",
         "warframestat",
-        "wfinfo"
+        "wfinfo",
+        "wmctrl"
     ]
 }

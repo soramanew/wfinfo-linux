@@ -1,11 +1,12 @@
 import Cairo from "cairo";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
+import { logPath as defaultLogPath, keybind } from "./config.user.js";
 const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, ensureDirectory, HOME, readFile, writeFile, subprocess } = Utils;
 
 const CACHE_DIR = `${GLib.get_user_cache_dir()}/wfinfo/ags`;
-const SCREENSHOT_PATH = `${CACHE_DIR}/screenshot.png`;
+const SCREENSHOT_PATH = `${CACHE_DIR}/../screenshot.png`;
 
 const fileExists = filePath => Gio.File.new_for_path(filePath).query_exists(null);
 const findEELog = () =>
@@ -37,7 +38,6 @@ const hookWindowOpen = (self, fn) =>
 
 const getLogPath = () => {
     const cachePath = `${CACHE_DIR}/ee_log_path.txt`;
-    const defaultLogPath = `${HOME}/.local/share/Steam/steamapps/compatdata/230410/pfx/drive_c/users/steamuser/AppData/Local/Warframe/EE.log`;
     const cachedLogPath = readFile(cachePath);
 
     // Use cached first, then try default and finally search
@@ -46,7 +46,10 @@ const getLogPath = () => {
     else if (fileExists(defaultLogPath)) logPath = defaultLogPath;
     else {
         const foundLogPath = findEELog();
-        if (fileExists(foundLogPath)) logPath = foundLogPath;
+        if (fileExists(foundLogPath)) {
+            console.log(`[INFO] Found EE.log as ${foundLogPath}`);
+            logPath = foundLogPath;
+        }
     }
 
     writeFile(logPath, cachePath);
@@ -94,23 +97,41 @@ const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${ge
 if (fileExists(logPath)) {
     console.log(`[INFO] Warframe EE.log path: ${logPath}`);
 
+    try {
+        if (exec("wmctrl -m").split("\n")[0].includes("Hyprland")) {
+            console.log("[INFO] Detected window manager as Hyprland. Registering keybind...");
+            // Unbind then rebind to avoid duplicate binds
+            execAsync(`hyprctl keyword unbind '${keybind}'`)
+                .then(() =>
+                    execAsync(`hyprctl keyword bind '${keybind},exec,${App.configDir}/../trigger.sh'`).catch(print)
+                )
+                .catch(print);
+        }
+    } catch (e) {
+        // Ignore spawn error cause no wmctrl
+        if (!(e instanceof GLib.SpawnError)) throw e;
+    }
+
+    globalThis.trigger = () => {
+        exec(`grimblast save active ${SCREENSHOT_PATH}`);
+        const pyOut = execPython("main", SCREENSHOT_PATH);
+        // Update databases async
+        execPython("database", "", true).catch(print);
+        try {
+            rewards.setValue(JSON.parse(pyOut));
+        } catch {
+            console.warn(`Unable to parse script output as JSON: ${pyOut}`);
+        }
+    };
+
     const rewards = Variable();
     subprocess(["tail", "-f", logPath], out => {
         if (
             out.includes("Pause countdown done") ||
             out.includes("Got rewards") ||
             out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
-        ) {
-            exec(`grimblast save active ${SCREENSHOT_PATH}`);
-            const pyOut = execPython("main", SCREENSHOT_PATH);
-            // Update databases async
-            execPython("database", "", true).catch(print);
-            try {
-                rewards.setValue(JSON.parse(pyOut));
-            } catch {
-                console.warn(`Unable to parse script output as JSON: ${pyOut}`);
-            }
-        }
+        )
+            trigger();
     });
 
     const RewardsDisplay = () =>

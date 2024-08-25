@@ -1,11 +1,9 @@
 import re
 from pathlib import Path
 
-import cv2
-import numpy as np
-import pytesseract as tess
 from PIL.Image import Image
 from platformdirs import user_cache_path
+from tesserocr import PyTessBaseAPI
 
 import database as db
 from theme import Theme
@@ -23,13 +21,19 @@ _REWARD_HEIGHT = _LINE_HEIGHT * 3  # Height of 3 lines
 # Image save count for filename
 _tmp_count = 0
 
+# Tesseract api
+tess = PyTessBaseAPI(
+    path="/usr/share/tessdata",  # Manual path cause unable to autodetect
+    psm=7,
+    variables={"tessedit_char_whitelist": db.whitelist_chars},
+)
 
-def save_image(image: Image | np.ndarray, cv: bool = False) -> Path:
+
+def save_image(image: Image) -> Path:
     """Saves the given image to a temporary file.
 
     Args:
-        image (Image | np.ndarray): The image to save.
-        cv (bool, optional): Whether the image is a cv image (i.e. a numpy array). Defaults to False.
+        image (Image): The image to save.
 
     Returns:
         Path: The path to the file.
@@ -40,10 +44,7 @@ def save_image(image: Image | np.ndarray, cv: bool = False) -> Path:
     save_path = _SAVE_DIR / f"{_tmp_count}.png"
     _tmp_count += 1
 
-    if cv:
-        cv2.imwrite(save_path, image)
-    else:
-        image.save(save_path)
+    image.save(save_path)
 
     return save_path
 
@@ -87,74 +88,23 @@ def cut_image(image: Image, num_rewards: int) -> list[Image]:
     ]
 
 
-def resize_image(image: Image, height: int) -> Image:
-    """Resizes the given image to the given height.
-
-    This method does not modify the given image and keeps the aspect ratio of the image.
-
-    Args:
-        image (Image): The image to resize.
-        height (int): The height to resize to.
-
-    Returns:
-        Image: The resized image.
-    """
-
-    factor = height / image.height
-    if factor > 1:
-        return image.resize((int(factor * image.width), int(factor * image.height)))
-    return image
-
-
-def preprocess_image(image: Image) -> np.ndarray:
-    """Preprocesses the given image for OCR.
-
-    This strips all colours to a range, resizes, thins and skeletonises the image.
-
-    Args:
-        image (Image): The image to preprocess.
-
-    Returns:
-        np.ndarray: The image after preprocessing.
-    """
-
-    # Strip colours except text
-    image = Theme.strip(image)
-
-    # Resize image
-    image = resize_image(image, 256)
-    path = save_image(image)
-
-    # Make stroke width uniform
-    image = cv2.imread(path, 0)
-    kernel = np.ones((5, 5), np.uint8)
-    image = cv2.erode(image, kernel, iterations=1)
-
-    save_image(image, cv=True)
-
-    return image
-
-
-def image_to_string(
-    image: Image | np.ndarray, preprocessed: bool = False, psm: int = 7
-) -> str:
+def image_to_string(image: Image, preprocessed: bool = False) -> str:
     """Converts the given image to a string via Tesseract OCR.
 
     Args:
-        image (Image | np.ndarray): The image to convert
+        image (Image): The image to convert
         preprocessed (bool, optional): Whether the image has already been preprocessed. Defaults to False.
-        psm (int, optional): The psm option to pass to tesseract. Range [0, 13]. Defaults to 7.
 
     Returns:
         str: The image as a string.
     """
 
     if not preprocessed:
-        image = preprocess_image(image)
+        image = Theme.strip(image)
 
-    # Tesseract image to string, look at manpage for config
-    config = f"--psm {psm} -c tessedit_char_whitelist='{db.whitelist_chars}'"
-    string = tess.image_to_string(image, config=config).strip()
+    # Tesseract image to string
+    tess.SetImage(image)
+    string = tess.GetUTF8Text().strip()
 
     # Manual replacements for commonly misspelled words
     replacements = {"Recelver": "Receiver", "Blucprint": "Blueprint"}

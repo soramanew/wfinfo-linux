@@ -1,6 +1,9 @@
 # WFInfo for Linux
 
-This is a recreation of [wfinfo](https://wfinfo.warframestat.us) for linux as it is not available on linux.
+This is a simple recreation of [wfinfo](https://wfinfo.warframestat.us) for Linux on Hyprland.
+
+> [!IMPORTANT]
+> This only works on Hyprland.
 
 ## Features
 
@@ -20,20 +23,26 @@ This is a recreation of [wfinfo](https://wfinfo.warframestat.us) for linux as it
 
 ## Installation
 
-1. Clone this repo. That's it.
+Clone this repo and install all dependencies.
+
+On Arch Linux (using `yay` AUR helper):
+
+```sh
+yay -S --needed python tesseract-data-eng tesseract aylurs-gtk-shell-git dart-sass grimblast fish wmctrl
+```
 
 ## Usage
 
-> [!INFO]
-> Scripts require the `fish` shell.
+> [!TIP]
+> Scripts require the `fish` shell. If not using `fish`, just look into the files and translate them to your shell.
 
 Start the program via the `run.sh` script in the base directory. The program will monitor the Warframe `EE.log` file
 and trigger when it detects a reward screen. As Warframe stores its logs in a buffer and only outputs to the log file
 when the buffer is full, the auto detection may be inconsistent.
 
-The reward display can be manually triggered while running via the `trigger.sh` script in the base directory. If on
-Hyprland, the program will automatically create a shortcut for the trigger script (`F2`) on start. This WILL remove
-any prior binds for `F2`. Otherwise, you can create a keybind manually depending on your DE.
+The reward display can be manually triggered while running via the `trigger.sh` script in the base directory. The
+program will automatically create a shortcut for the trigger script (`Ctrl+F2` by default) on start. This WILL remove
+any prior binds for that key.
 
 ## Configuration
 

@@ -98,7 +98,7 @@ if (fileExists(logPath)) {
     console.log(`[INFO] Warframe EE.log path: ${logPath}`);
 
     try {
-        if (exec("wmctrl -m").split("\n")[0].includes("Hyprland")) {
+        if (keybind && exec("wmctrl -m").split("\n")[0].includes("Hyprland")) {
             console.log("[INFO] Detected window manager as Hyprland. Registering keybind...");
             // Unbind then rebind to avoid duplicate binds
             execAsync(`hyprctl keyword unbind '${keybind}'`)

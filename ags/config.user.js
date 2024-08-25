@@ -1,4 +1,4 @@
-// Trigger script keybind
+// Trigger script keybind (mod,key Hyprland style), set to empty to disable auto creation
 export const keybind = "Ctrl,F2";
 
 // Path to Warframe's EE.log

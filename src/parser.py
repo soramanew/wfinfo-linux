@@ -110,7 +110,6 @@ def preprocess_image(image: Image) -> np.ndarray:
     """Preprocesses the given image for OCR.
 
     This strips all colours to a range, resizes, thins and skeletonises the image.
-    WARNING: This function modifies the given image.
 
     Args:
         image (Image): The image to preprocess.
@@ -120,7 +119,6 @@ def preprocess_image(image: Image) -> np.ndarray:
     """
 
     # Strip colours except text
-    Theme.strip(image)
 
     # Resize image
     image = resize_image(image, 256)
@@ -230,5 +228,7 @@ def parse_image(image: Image) -> list[str]:
             off += line_height
 
         rewards.append(reward.strip())
+
+    print(rewards)
 
     return rewards

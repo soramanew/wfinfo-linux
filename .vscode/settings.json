@@ -1,9 +1,11 @@
 {
     "cSpell.words": [
         "Akbronco",
+        "astype",
         "BARUUK",
         "compatdata",
         "eqmt",
+        "fromarray",
         "getpixel",
         "grimblast",
         "GRINEER",
@@ -24,6 +26,7 @@
         "steamuser",
         "tessedit",
         "tesseract",
+        "vectorize",
         "venv",
         "VITRUVIAN",
         "vpack",

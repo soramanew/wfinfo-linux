@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from enum import Enum
 
+import numpy as np
+import PIL.Image as Img
 from PIL.Image import Image
 
 type Pixel = tuple[int, int, int]
@@ -61,8 +63,6 @@ class Theme(Enum):
     ) -> Image:
         """Strips the text from the given image for OCR.
 
-        WARNING: This method modifies the passed in image.
-
         Args:
             img (Image): The image to strip.
             theme (Theme, optional): The theme to use for colour checking. Defaults to VITRUVIAN.
@@ -70,7 +70,7 @@ class Theme(Enum):
                 If a theme is also passed in, it is ignored in favour of the filter function. Defaults to None.
 
         Returns:
-            Image: The same image that was passed in. This is only to allow chaining.
+            Image: The modified image.
         """
 
         # Use filter_fn if given, else check theme colours
@@ -82,9 +82,10 @@ class Theme(Enum):
             def filter_fn(pxl):
                 return cls._check_range(pxl, theme)
 
-        for x in range(img.width):
-            for y in range(img.height):
-                # Black if match else white
-                pxl = (0, 0, 0) if filter_fn(img.getpixel((x, y))) else (255, 255, 255)
-                img.putpixel((x, y), pxl)
-        return img
+        img_array = np.array(img)
+        filter_fn_vec = np.vectorize(lambda r, g, b: filter_fn((r, g, b)))
+        mask = filter_fn_vec(img_array[..., 0], img_array[..., 1], img_array[..., 2])
+        output_array = np.ones_like(img_array) * 255  # Full white array
+        output_array[mask] = 0, 0, 0  # Set matching to black
+
+        return Img.fromarray(output_array.astype("uint8"))

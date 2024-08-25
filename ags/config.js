@@ -162,7 +162,7 @@ if (fileExists(logPath)) {
 
                         // Try close when reward choosing over or in 15 seconds
                         timeout?.destroy();
-                        const timeLeft = parseInt(execPython("time_left", SCREENSHOT_PATH), 10) || 15;
+                        const timeLeft = Math.min(15, execPython("time_left", SCREENSHOT_PATH)) || 15;
                         timeout = setTimeout(() => App.closeWindow(self.name), timeLeft * 1000);
                     }
                 });

@@ -4,6 +4,8 @@ from enum import Enum
 
 from PIL.Image import Image
 
+type Pixel = tuple[int, int, int]
+
 
 class Theme(Enum):
     _THRESHOLD = 0.2
@@ -27,11 +29,11 @@ class Theme(Enum):
     ZEPHYR = (253, 132, 2), (255, 53, 0)
 
     @classmethod
-    def _check_range(cls, pixel: tuple[int, int, int], theme: Theme) -> bool:
+    def _check_range(cls, pixel: Pixel, theme: Theme) -> bool:
         """Checks whether the given pixel is in the colour range of the given theme.
 
         Args:
-            pixel (tuple[int, int, int]): The pixel to check.
+            pixel (Pixel): The pixel to check.
             theme (Theme): The theme to use for checking.
 
         Returns:
@@ -54,7 +56,9 @@ class Theme(Enum):
         return False
 
     @classmethod
-    def strip(cls, img: Image, theme: Theme = None) -> Image:
+    def strip(
+        cls, img: Image, theme: Theme = None, filter_fn: callable[[Pixel], bool] = None
+    ) -> Image:
         """Strips the text from the given image for OCR.
 
         WARNING: This method modifies the passed in image.
@@ -62,21 +66,25 @@ class Theme(Enum):
         Args:
             img (Image): The image to strip.
             theme (Theme, optional): The theme to use for colour checking. Defaults to VITRUVIAN.
+            filter_fn (callable[[Pixel], bool], optional): A filter function to use instead of a theme.
+                If a theme is also passed in, it is ignored in favour of the filter function. Defaults to None.
 
         Returns:
             Image: The same image that was passed in. This is only to allow chaining.
         """
 
-        # Default parameters are before enum creation so not an enum if default param
-        if theme is None:
-            theme = cls.VITRUVIAN
+        # Use filter_fn if given, else check theme colours
+        if filter_fn is None:
+            # Vitruvian default theme
+            if theme is None:
+                theme = cls.VITRUVIAN
+
+            def filter_fn(pxl):
+                return cls._check_range(pxl, theme)
 
         for x in range(img.width):
             for y in range(img.height):
                 # Black if match else white
-                if cls._check_range(img.getpixel((x, y)), theme):
-                    pxl = 0, 0, 0
-                else:
-                    pxl = 255, 255, 255
+                pxl = (0, 0, 0) if filter_fn(img.getpixel((x, y))) else (255, 255, 255)
                 img.putpixel((x, y), pxl)
         return img

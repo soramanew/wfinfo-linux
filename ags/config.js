@@ -5,12 +5,15 @@ const { Window, Box, Label, Icon } = Widget;
 const { exec, ensureDirectory, HOME } = Utils;
 
 const CACHE_DIR = `${GLib.get_user_cache_dir()}/wfinfo/ags`;
+const SCREENSHOT_PATH = `${App.configDir}/../test-images/1.png`; // `${CACHE_DIR}/screenshot.png`;
 
 const fileExists = filePath => Gio.File.new_for_path(filePath).query_exists(null);
 const findEELog = () =>
     exec(
         `bash -c "find ${HOME} -type f -name 'EE.log' -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d ' ' -f 2"`
     );
+const execPython = (script, args = "") =>
+    exec(`${App.configDir}/../.venv/bin/python ${App.configDir}/../src/${script}.py ${args}`);
 
 const getDimensions = () => {
     // For multi-monitor, get monitor window is on
@@ -72,6 +75,8 @@ const RewardDisplay = (reward, i) =>
 const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${getDimensions().bottom * 1.5}px;`));
 
 if (fileExists(logPath)) {
+    console.log(`Warframe EE.log path: ${logPath}`);
+
     // const rewards = Variable(null, {
     //     listen: [
     //         `tail -f '${logPath}'`,
@@ -80,18 +85,14 @@ if (fileExists(logPath)) {
     //                 out.includes("Pause countdown done") ||
     //                 out.includes("Got rewards") ||
     //                 out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
-    //             )
-    //                 return JSON.parse(exec(`${App.configDir}/../.venv/bin/python ${App.configDir}/../src/main.py`));
+    //             ) {
+    //                 exec(`grimblast save active ${SCREENSHOT_PATH}`);
+    //                 return JSON.parse(execPython("main", SCREENSHOT_PATH));
+    //             }
     //         },
     //     ],
     // });
-    const rewards = Variable(
-        JSON.parse(
-            exec(
-                `${App.configDir}/../.venv/bin/python ${App.configDir}/../src/main.py ${App.configDir}/../test-images/1.png`
-            )
-        )
-    );
+    const rewards = Variable(JSON.parse(execPython("main", SCREENSHOT_PATH)));
 
     const RewardsDisplay = () =>
         Box().hook(rewards, self => {
@@ -117,8 +118,11 @@ if (fileExists(logPath)) {
                 self.hook(rewards, () => {
                     if (rewards.value) {
                         App.openWindow(self.name);
+
+                        // Try close when reward choosing over or in 15 seconds
                         timeout?.destroy();
-                        timeout = setTimeout(() => App.closeWindow(self.name), 15000);
+                        const timeLeft = parseInt(execPython("time_left", SCREENSHOT_PATH), 10) || 15;
+                        timeout = setTimeout(() => App.closeWindow(self.name), timeLeft * 1000);
                     }
                 });
             },

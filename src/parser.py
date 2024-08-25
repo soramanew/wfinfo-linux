@@ -1,6 +1,9 @@
+import json
 import re
+import sys
 from pathlib import Path
 
+import PIL.Image as Img
 from PIL.Image import Image
 from platformdirs import user_cache_path
 from tesserocr import PyTessBaseAPI
@@ -181,3 +184,9 @@ def parse_image(image: Image) -> list[str]:
         rewards.append(reward.strip())
 
     return rewards
+
+
+# Parse given image and output if called as main script
+if __name__ == "__main__":
+    with Img.open(sys.argv[1]).convert("RGB") as image:
+        print(json.dumps([{"name": r, **db.prices[r]} for r in parse_image(image)]))

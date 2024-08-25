@@ -114,7 +114,7 @@ if (fileExists(logPath)) {
 
     globalThis.trigger = () => {
         exec(`grimblast save active ${SCREENSHOT_PATH}`);
-        const pyOut = execPython("main", SCREENSHOT_PATH);
+        const pyOut = execPython("parser", SCREENSHOT_PATH);
         // Update databases async
         execPython("database", "", true).catch(print);
         try {

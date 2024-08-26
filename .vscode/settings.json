@@ -25,6 +25,7 @@
         "Preprocesses",
         "putpixel",
         "pytesseract",
+        "randr",
         "skeletonises",
         "steamapps",
         "steamuser",

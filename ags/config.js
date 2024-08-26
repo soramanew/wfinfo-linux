@@ -13,7 +13,7 @@ const findEELog = () =>
     exec(
         `bash -c "find ${HOME} -type f -name 'EE.log' -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d ' ' -f 2"`
     );
-const execPython = (script, args = "", async = false) =>
+const execPython = (script, args = "", async = true) =>
     (async ? execAsync : exec)(`${App.configDir}/../.venv/bin/python ${App.configDir}/../src/${script}.py ${args}`);
 
 const getDimensions = () => {
@@ -24,7 +24,13 @@ const getDimensions = () => {
     const rewardWidth = 235 * scale; // Per reward no spacing
     const rewardSpacing = 7 * scale; // Spacing between rewards
     const rewardBottom = 80 * scale; // center - bottom = real bottom
-    return { width: rewardWidth, spacing: rewardSpacing, bottom: rewardBottom };
+    return {
+        screenWidth: width,
+        screenHeight: height,
+        width: rewardWidth,
+        spacing: rewardSpacing,
+        bottom: rewardBottom,
+    };
 };
 
 const hookWindowOpen = (self, fn) =>
@@ -76,11 +82,19 @@ const SoldDisplay = ({ today, yesterday }) =>
         children: [Label(`${today} sold last 24h`), Label(`${today + yesterday} sold last 48h`)],
     });
 
-const RewardDisplay = (reward, i) =>
-    Box({
-        css: `min-width: ${getDimensions().width}px;` + (i > 0 ? `margin-left: ${getDimensions().spacing}px;` : ""),
+const DisplayBase = (i, child) => {
+    const { width, spacing } = getDimensions();
+    return Box({
         className: "reward-display",
-        child: Box({
+        css: `min-width: ${width}px;` + (i > 0 ? `margin-left: ${spacing}px;` : ""),
+        child,
+    });
+};
+
+const RewardDisplay = (reward, i) =>
+    DisplayBase(
+        i,
+        Box({
             vertical: true,
             vpack: "center",
             children: [
@@ -88,11 +102,13 @@ const RewardDisplay = (reward, i) =>
                 PriceDisplay(reward.price),
                 SoldDisplay(reward.sold),
             ],
-        }),
-    });
+        })
+    );
 
-// Reward bottom is up but we want offset so move down (total 2 * rewardBottom offset)
-const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${getDimensions().bottom * 1.5}px;`));
+const LoadingDisplay = i => DisplayBase(i, Label({ hexpand: true, className: "reward-name", label: "Loading..." }));
+
+// Position gui so top = screen center
+const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${getDimensions().screenHeight / 2}px;`));
 
 if (fileExists(logPath)) {
     console.log(`[INFO] Warframe EE.log path: ${logPath}`);
@@ -112,15 +128,35 @@ if (fileExists(logPath)) {
         if (!(e instanceof GLib.SpawnError)) throw e;
     }
 
-    globalThis.trigger = () => {
-        exec(`grimblast save active ${SCREENSHOT_PATH}`);
-        const pyOut = execPython("parser", SCREENSHOT_PATH);
+    globalThis.trigger = async () => {
+        console.log("[DEBUG] Triggered!");
+
+        // Screenshot
+        const monitors = JSON.parse(await execAsync("wlr-randr --json"));
+        const window = App.getWindow("wfinfo").window;
+        const monitor = window.get_display().get_monitor_at_window(window);
+        const { name: output } = monitors.find(
+            m => m.make === monitor.get_manufacturer() && m.model === monitor.get_model()
+        );
+        await execAsync(`grim -l 0 -o '${output}' ${SCREENSHOT_PATH}`);
+
+        // Get number of rewards and open loading
+        const numRewards = await execPython("num_rewards", SCREENSHOT_PATH);
+        rewards.value = parseInt(numRewards, 10);
+        App.openWindow("wfinfo");
+
         // Update databases async
-        execPython("database", "", true).catch(print);
+        execPython("database").catch(print);
+
+        // Parse image
+        const pyOut = await execPython("parser", `${SCREENSHOT_PATH} ${numRewards}`);
+
+        // Set value or warn if unable to parse
         try {
-            rewards.setValue(JSON.parse(pyOut));
+            rewards.value = JSON.parse(pyOut);
         } catch {
             console.warn(`Unable to parse script output as JSON: ${pyOut}`);
+            App.closeWindow("wfinfo");
         }
     };
 
@@ -136,7 +172,9 @@ if (fileExists(logPath)) {
 
     const RewardsDisplay = () =>
         Box().hook(rewards, self => {
-            if (rewards.value) self.children = rewards.value.map(RewardDisplay);
+            if (Array.isArray(rewards.value)) self.children = rewards.value.map(RewardDisplay);
+            else if (Number.isInteger(rewards.value))
+                self.children = Array.from({ length: rewards.value }, (_, i) => i).map(LoadingDisplay);
         });
 
     const MainWindow = () =>
@@ -144,6 +182,7 @@ if (fileExists(logPath)) {
             name: "wfinfo",
             visible: false,
             layer: "overlay",
+            anchor: ["top", "bottom"],
             exclusivity: "ignore",
             keymode: "none",
             child: Box({ vertical: true, children: [Spacer(), RewardsDisplay()] }),
@@ -156,14 +195,15 @@ if (fileExists(logPath)) {
 
                 let timeout;
                 self.hook(rewards, () => {
-                    if (rewards.value && rewards.value.length) {
-                        console.log("Got rewards:", rewards.value);
-                        App.openWindow(self.name);
+                    if (Array.isArray(rewards.value) && rewards.value.length) {
+                        console.log("[DEBUG] Got rewards:", rewards.value);
 
                         // Try close when reward choosing over or in 15 seconds
                         timeout?.destroy();
-                        const timeLeft = Math.min(15, execPython("time_left", SCREENSHOT_PATH)) || 15;
-                        timeout = setTimeout(() => App.closeWindow(self.name), timeLeft * 1000);
+                        execPython("time_left", SCREENSHOT_PATH).then(out => {
+                            const timeLeft = Math.min(15, out) || 15;
+                            timeout = setTimeout(() => App.closeWindow(self.name), timeLeft * 1000);
+                        });
                     }
                 });
             },

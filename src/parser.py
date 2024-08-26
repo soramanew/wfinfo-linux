@@ -140,17 +140,21 @@ def get_num_rewards(image: Image) -> int:
     return len(re.findall("|".join(db.item_endings), rewards))
 
 
-def parse_image(image: Image) -> list[str]:
+def parse_image(image: Image, num_rewards: int = None) -> list[str]:
     """Parses the given image for rewards and returns the reward names.
 
     Args:
         image (Image): The image to parse.
+        num_rewards (int, optional): The number of rewards in the image. Defaults to None for autodetection.
 
     Returns:
         list[str]: The reward names.
     """
 
-    images = cut_image(image, get_num_rewards(image))
+    if num_rewards is None:
+        num_rewards = get_num_rewards(image)
+
+    images = cut_image(image, num_rewards)
     line_height = _LINE_HEIGHT * get_scale(image)
     rewards = []
 
@@ -189,4 +193,13 @@ def parse_image(image: Image) -> list[str]:
 # Parse given image and output if called as main script
 if __name__ == "__main__":
     with Img.open(sys.argv[1]).convert("RGB") as image:
-        print(json.dumps([{"name": r, **db.prices[r]} for r in parse_image(image)]))
+        print(
+            json.dumps(
+                [
+                    {"name": r, **db.prices[r]}
+                    for r in parse_image(
+                        image, int(sys.argv[2]) if len(sys.argv) > 2 else None
+                    )
+                ]
+            )
+        )

@@ -65,3 +65,8 @@ file. If the file is not in the default location, the program will try to search
 
 **A:** See `ags/scss/main.scss` to configure GUI styles. Execute `ags -b wfinfo -r 'reloadCss();'` after editing the
 file to reload the styles if the program is currently running.
+
+**Q: What are these `Gio.UnixInputStream has been moved ... Please update your code...` warnings I am seeing?**
+
+**A:** Ignore them, they do not affect the functionality of the program. They are from `AGS` and I am unable to get rid
+of them.

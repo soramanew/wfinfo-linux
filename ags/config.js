@@ -89,9 +89,8 @@ const SoldDisplay = ({ today, yesterday }) =>
 const DisplayBase = (i, child) => {
     const { width, spacing } = getDimensions();
     return Box({
-        className: "reward-display",
         css: `min-width: ${width}px;` + (i > 0 ? `margin-left: ${spacing}px;` : ""),
-        child,
+        child: Box({ className: "reward-display", child }),
     });
 };
 

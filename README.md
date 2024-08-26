@@ -1,6 +1,6 @@
 # WFInfo for Linux
 
-This is a simple recreation of [wfinfo](https://wfinfo.warframestat.us) for Linux (Wayland).
+This is a limited remake of [wfinfo](https://wfinfo.warframestat.us) in Python and JS for Linux (Wayland).
 
 ## Features
 
@@ -34,7 +34,7 @@ yay -S --needed python tesseract-data-eng tesseract aylurs-gtk-shell-git dart-sa
 > [!TIP]
 > Scripts require the `fish` shell. If not using `fish`, just look into the files and translate them to your shell.
 
-Start the program via the `run.sh` script in the base directory. The program will monitor the Warframe `EE.log` file
+Start the program via the `run.sh` script in the base directory. The program will monitor Warframe's `EE.log` file
 and trigger when it detects a reward screen. As Warframe stores its logs in a buffer and only outputs to the log file
 when the buffer is full, the auto detection may be inconsistent.
 
@@ -45,3 +45,23 @@ remove any prior binds for that key. Otherwise, just create a keybind manually d
 ## Configuration
 
 Configuration is in `ags/config.user.js`. Read the comments in the file for what each variable controls.
+
+## FAQ
+
+**Q: What if my `EE.log` file is in a different location?**
+
+**A:** The default location is set in `ags/config.user.js`, but you can change it to whatever value you like in that
+file. If the file is not in the default location, the program will try to search for it in your home directory.
+
+**Q: How can I change the keybind for manually triggering the detection?**
+
+**A:** Look in `ags/config.user.js`.
+
+**Q: Does this work with a multi-monitor setup?**
+
+**A:** It should, however I do not own one myself and therefore cannot test it.
+
+**Q: The font size is too large! How can I change it?**
+
+**A:** See `ags/scss/main.scss` to configure GUI styles. Execute `ags -b wfinfo -r 'reloadCss();'` after editing the
+file to reload the styles if the program is currently running.

@@ -1,0 +1,52 @@
+// Config vars
+$font-scale: 1 !default;
+$name-font: "Gabarito", "Poppins", "Readex Pro", "Lexend", sans-serif !default;
+$price-font: $name-font !default;
+$sold-font: "Rubik", "Geist", "AR One Sans", "Reddit Sans", "Inter", "Roboto", "Ubuntu", "Noto Sans", sans-serif !default;
+$rounding: 1.159rem !default;
+
+// Unset all styles from GTK theme
+* {
+    all: unset;
+}
+
+// Actual styles
+
+.reward-display {
+    border-radius: $rounding;
+    -gtk-outline-radius: $rounding;
+    background-color: #131313a2;
+    padding: 0.68rem;
+}
+
+.reward-name {
+    font-family: $name-font;
+    font-size: 1.4545rem * $font-scale;
+    margin-bottom: 0.408rem;
+}
+
+.reward-price {
+    font-family: $price-font;
+    font-weight: 500;
+    font-size: 1.6363rem * $font-scale;
+    margin-bottom: 0.34rem;
+
+    // Space between plat and ducat displays
+    & > :first-child {
+        margin-right: 0.68rem;
+    }
+
+    // Space between value and icon
+    & > * > :first-child {
+        margin-right: 0.272rem;
+    }
+}
+
+.reward-sold {
+    font-family: $sold-font;
+    font-size: 1.0909rem * $font-scale;
+}
+
+.reward-sold > :first-child {
+    margin-bottom: 0.068rem;
+}

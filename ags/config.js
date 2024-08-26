@@ -1,12 +1,16 @@
 import Cairo from "cairo";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
-import { logPath as defaultLogPath, keybind } from "./config.user.js";
+import { debugMode, logPath as defaultLogPath, keybind } from "./config.user.js";
 const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, ensureDirectory, HOME, readFile, writeFile, subprocess } = Utils;
 
 const CACHE_DIR = `${GLib.get_user_cache_dir()}/wfinfo/ags`;
 const SCREENSHOT_PATH = `${CACHE_DIR}/../screenshot.png`;
+
+const debug = (...msg) => {
+    if (debugMode) console.log("[DEBUG]", ...msg);
+};
 
 const fileExists = filePath => Gio.File.new_for_path(filePath).query_exists(null);
 const findEELog = () =>
@@ -129,7 +133,7 @@ if (fileExists(logPath)) {
     }
 
     globalThis.trigger = async () => {
-        console.log("[DEBUG] Triggered!");
+        debug("Triggered!");
 
         // Screenshot
         const monitors = JSON.parse(await execAsync("wlr-randr --json"));
@@ -189,20 +193,25 @@ if (fileExists(logPath)) {
             setup: self => {
                 // Allow click through
                 const dummyRegion = new Cairo.Region();
-                const setRegion = () => self.window.input_shape_combine_region(dummyRegion, 0, 0);
-                hookWindowOpen(self, setRegion);
-                Utils.timeout(1, setRegion);
+                Utils.timeout(1, () =>
+                    self.on("size-allocate", () => self.window.input_shape_combine_region(dummyRegion, 0, 0))
+                );
 
                 let timeout;
                 self.hook(rewards, () => {
                     if (Array.isArray(rewards.value) && rewards.value.length) {
-                        console.log("[DEBUG] Got rewards:", rewards.value);
+                        debug("Got rewards:", rewards.value);
 
                         // Try close when reward choosing over or in 15 seconds
                         timeout?.destroy();
                         execPython("time_left", SCREENSHOT_PATH).then(out => {
                             const timeLeft = Math.min(15, out) || 15;
-                            timeout = setTimeout(() => App.closeWindow(self.name), timeLeft * 1000);
+                            debug(`Closing GUI in ${timeLeft} seconds...`);
+                            const now = Date.now();
+                            timeout = setTimeout(() => {
+                                App.closeWindow(self.name);
+                                debug(`Closed GUI after ${(Date.now() - now) / 1000} seconds.`);
+                            }, timeLeft * 1000);
                         });
                     }
                 });

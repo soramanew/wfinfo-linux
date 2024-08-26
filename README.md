@@ -44,7 +44,7 @@ remove any prior binds for that key. Otherwise, just create a keybind manually d
 
 ## Configuration
 
-Configuration is in `ags/config.user.js`. Read the comments in the file for what each variable controls.
+Configuration is in `ags/config.user.js` and `ags/scss/main.scss`. Read the comments in each file for how to configure.
 
 ## FAQ
 

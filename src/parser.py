@@ -3,6 +3,7 @@ import re
 import sys
 from pathlib import Path
 
+import Levenshtein as lev
 import PIL.Image as Img
 from PIL.Image import Image
 from platformdirs import user_cache_path
@@ -91,12 +92,15 @@ def cut_image(image: Image, num_rewards: int) -> list[Image]:
     ]
 
 
-def image_to_string(image: Image, preprocessed: bool = False) -> str:
+def image_to_string(
+    image: Image, preprocessed: bool = False, validate: bool = True
+) -> str:
     """Converts the given image to a string via Tesseract OCR.
 
     Args:
         image (Image): The image to convert
         preprocessed (bool, optional): Whether the image has already been preprocessed. Defaults to False.
+        validate (bool, optional): Whether to validate the words in the string against the database of words. Defaults to True.
 
     Returns:
         str: The image as a string.
@@ -109,12 +113,32 @@ def image_to_string(image: Image, preprocessed: bool = False) -> str:
     tess.SetImage(image)
     string = tess.GetUTF8Text().strip()
 
+    # Return if no validation
+    if not validate:
+        return string
+
     # Manual replacements for commonly misspelled words
     replacements = {"Recelver": "Receiver", "Blucprint": "Blueprint"}
     for repl in replacements:
         string = string.replace(repl, replacements[repl])
 
-    return string
+    # 2nd layer of checking via fuzzy matching each word
+    checked = ""
+    for word in string.split():
+        valid_word = None
+        if word in db.words:
+            valid_word = word
+        else:
+            best_ratio = 0
+            for w in db.words:
+                ratio = lev.ratio(word, w, score_cutoff=0.8)
+                if ratio > best_ratio:
+                    best_ratio = ratio
+                    valid_word = w
+        if valid_word is not None:
+            checked += f" {valid_word}"
+
+    return checked.strip()
 
 
 def get_num_rewards(image: Image) -> int:
@@ -162,30 +186,22 @@ def parse_image(image: Image, num_rewards: int = None) -> list[str]:
     for image in images:
         off = 0
         reward = ""
-        valid = True
+        line = True  # Default to init loop
 
         # Parse line by line
-        while valid:
-            valid = False
-
+        while line:
             # Get line as str
             line = image.crop(
                 (0, image.height - line_height - off, image.width, image.height - off)
             )
             line = image_to_string(line)
 
-            # Check words in line
-            line_str = ""
-            for word in line.split():
-                if word in db.words:
-                    line_str += f" {word}"
-                    valid = True
-
             # Add to reward name and add offset to go up a line
-            reward = f"{line_str.strip()} {reward.strip()}"
+            reward = f"{line} {reward.strip()}"
             off += line_height
 
-        rewards.append(reward.strip())
+        reward = reward.strip()
+        rewards.append(reward if reward in db.prices else "INVALID")
 
     return rewards
 
@@ -193,10 +209,16 @@ def parse_image(image: Image, num_rewards: int = None) -> list[str]:
 # Parse given image and output if called as main script
 if __name__ == "__main__":
     with Img.open(sys.argv[1]).convert("RGB") as image:
+        invalid = {
+            "name": "Invalid",
+            "price": {"platinum": 0, "ducats": 0},
+            "sold": {"today": 0, "yesterday": 0},
+        }
+
         print(
             json.dumps(
                 [
-                    {"name": r, **db.prices[r]}
+                    (invalid if r == "INVALID" else {"name": r, **db.prices[r]})
                     for r in parse_image(
                         image, int(sys.argv[2]) if len(sys.argv) > 2 else None
                     )

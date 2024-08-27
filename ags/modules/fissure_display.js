@@ -199,7 +199,13 @@ export default () =>
                     timeout?.destroy();
                     execPython("time_left", SCREENSHOT_PATH).then(out => {
                         const timeLeft = Math.min(15, out) || 15;
-                        debug(`Closing GUI in ${timeLeft} seconds...`);
+
+                        debug(
+                            (timeLeft == out
+                                ? `Detected time remaining as ${timeLeft} second(s).`
+                                : `Invalid time: ${out}.`) + ` Closing GUI in ${timeLeft} second(s)...`
+                        );
+
                         const now = Date.now();
                         timeout = setTimeout(() => {
                             App.closeWindow(self.name);

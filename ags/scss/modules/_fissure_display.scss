@@ -1,0 +1,45 @@
+@use "../lib/colour" as c;
+@use "../lib/rounding";
+@use "../lib/font";
+
+.reward-display {
+    @include rounding.normal;
+
+    background-color: change-color(c.$background, $alpha: 0.6);
+    color: c.$onBackground;
+    padding: 0.68rem;
+}
+
+.reward-name {
+    @include font.title;
+    @include font.large;
+
+    margin-bottom: 0.408rem;
+}
+
+.reward-price {
+    @include font.title;
+    @include font.semibold;
+    @include font.larger;
+
+    margin-bottom: 0.34rem;
+
+    // Space between plat and ducat displays
+    & > :first-child {
+        margin-right: 0.68rem;
+    }
+
+    // Space between value and icon
+    & > * > :first-child {
+        margin-right: 0.272rem;
+    }
+}
+
+.reward-sold {
+    @include font.main;
+    @include font.small;
+}
+
+.reward-sold > :first-child {
+    margin-bottom: 0.068rem;
+}

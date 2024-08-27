@@ -1,0 +1,36 @@
+$verysmall: 0.477rem;
+$small: 0.818rem;
+$mediumsmall: 0.955rem;
+$medium: 1.159rem;
+$mediumlarge: 1.364rem;
+$large: 1.705rem;
+
+@mixin small {
+    border-radius: $small;
+    -gtk-outline-radius: $small;
+}
+
+@mixin smallish {
+    border-radius: $mediumsmall;
+    -gtk-outline-radius: $mediumsmall;
+}
+
+@mixin normal {
+    border-radius: $medium;
+    -gtk-outline-radius: $medium;
+}
+
+@mixin largeish {
+    border-radius: $mediumlarge;
+    -gtk-outline-radius: $mediumlarge;
+}
+
+@mixin large {
+    border-radius: $large;
+    -gtk-outline-radius: $large;
+}
+
+@mixin full {
+    border-radius: 9999px;
+    -gtk-outline-radius: 9999px;
+}

@@ -1,0 +1,93 @@
+@mixin title {
+    // Geometric sans-serif
+    font-family: "Gabarito", "Poppins", "Readex Pro", "Lexend", sans-serif;
+}
+
+@mixin main {
+    // Other clean sans-serif
+    font-family: "Rubik", "Geist", "AR One Sans", "Reddit Sans", "Inter", "Roboto", "Ubuntu", "Noto Sans", sans-serif;
+    // font-weight: 500;
+}
+
+@mixin material {
+    // Material Design Icons
+    font-family: "Material Symbols Rounded", "MaterialSymbolsRounded", "Material Symbols Outlined",
+        "Material Symbols Sharp";
+}
+
+@mixin tech {
+    // Monospace for sys info n stuff. Doesn't have to be a nerd font, but it's cool.
+    font-family: "JetBrains Mono NF", "JetBrains Mono Nerd Font", "JetBrains Mono NL", "SpaceMono NF",
+        "SpaceMono Nerd Font", monospace;
+}
+
+@mixin reading {
+    // The most readable fonts, for a comfortable reading experience
+    font-family: "Readex Pro", "Lexend", "Noto Sans", sans-serif;
+    // font-weight: 500;
+}
+
+@mixin gigantic {
+    font-size: 3rem;
+}
+
+@mixin massive {
+    font-size: 2.7273rem;
+}
+
+@mixin hugerass {
+    font-size: 2.045rem;
+}
+
+@mixin hugeass {
+    font-size: 1.8182rem;
+}
+
+@mixin larger {
+    font-size: 1.6363rem;
+}
+
+@mixin large {
+    //16pt
+    font-size: 1.4545rem;
+}
+
+@mixin norm {
+    //14pt
+    font-size: 1.2727rem;
+}
+
+@mixin small {
+    //12pt
+    font-size: 1.0909rem;
+}
+
+@mixin smallie {
+    //11pt
+    font-size: 1rem;
+}
+
+@mixin smaller {
+    //10pt
+    font-size: 0.9091rem;
+}
+
+@mixin tiny {
+    font-size: 0.7273rem;
+}
+
+@mixin thin {
+    font-weight: 300;
+}
+
+@mixin semibold {
+    font-weight: 500;
+}
+
+@mixin bold {
+    font-weight: bold;
+}
+
+@mixin italic {
+    font-style: italic;
+}

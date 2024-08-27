@@ -4,20 +4,24 @@ This is a limited remake of [wfinfo](https://wfinfo.warframestat.us) in Python a
 
 ## Features
 
--   Relic reward price display
+-   Supports Wayland
+-   Detect rewards screen (inconsistent)
+-   Manual trigger detection
+-   Global keybind (Hyprland only)
+-   Display price and volume stats for items
 
 ![Reward price display](/readme/reward_display.png)
 
 ## Requirements
 
--   python >= 3.12
--   tesseract - for OCR
--   [AGS](https://github.com/Aylur/ags) - for GUI
--   dart-sass - for compiling GUI styles
--   grim - for screenshots
--   wlr-randr - for getting active monitor for screenshots
--   fish - optional, for `.sh` scripts
--   wmctrl - optional, for auto keybind creation
+-   `python` >= 3.12
+-   `tesseract` for OCR
+-   [`AGS`](https://github.com/Aylur/ags) - for GUI
+-   `dart-sass` - for compiling GUI styles
+-   `grim` - for screenshots
+-   `wlr-randr` - for getting active monitor for screenshots
+-   `fish` - optional, for `.sh` scripts
+-   `wmctrl` - optional, for auto keybind creation
 
 ## Installation
 

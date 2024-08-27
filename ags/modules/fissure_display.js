@@ -198,12 +198,12 @@ export default () =>
                     // Try close when reward choosing over or in 15 seconds
                     timeout?.destroy();
                     execPython("time_left", SCREENSHOT_PATH).then(out => {
-                        const timeLeft = Math.min(15, out) || 15;
+                        const timeLeft = Math.max(3, Math.min(15, out)) || 15;
 
                         debug(
                             (timeLeft == out
-                                ? `Detected time remaining as ${timeLeft} second(s).`
-                                : `Invalid time: ${out}.`) + ` Closing GUI in ${timeLeft} second(s)...`
+                                ? `Detected time remaining as ${timeLeft} seconds.`
+                                : `Invalid time: ${out}.`) + ` Closing GUI in ${timeLeft} seconds...`
                         );
 
                         const now = Date.now();

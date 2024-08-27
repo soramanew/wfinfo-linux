@@ -1,5 +1,4 @@
 import Cairo from "cairo";
-import GLib from "gi://GLib";
 import { logPath as defaultLogPath, keybind } from "../config.user.js";
 import { CACHE_DIR, debug, fileExists } from "../lib.js";
 const { Window, Box, Label, Icon } = Widget;
@@ -105,60 +104,43 @@ const LoadingDisplay = i => DisplayBase(i, Label({ hexpand: true, className: "re
 // Position gui so top = screen center
 const Spacer = () => hookWindowOpen(Box(), self => (self.css = `min-height: ${getDimensions().screenHeight / 2}px;`));
 
-let MainWindow;
+globalThis.trigger = async () => {
+    debug("Triggered!");
+
+    // Screenshot
+    const monitors = JSON.parse(await execAsync("wlr-randr --json"));
+    const window = App.getWindow("wfinfo").window;
+    const monitor = window.get_display().get_monitor_at_window(window);
+    const { name: output } = monitors.find(
+        m => m.make === monitor.get_manufacturer() && m.model === monitor.get_model()
+    );
+    await execAsync(`grim -l 0 -o '${output}' ${SCREENSHOT_PATH}`);
+
+    // Get number of rewards and open loading
+    const numRewards = await execPython("num_rewards", SCREENSHOT_PATH);
+    rewards.value = parseInt(numRewards, 10);
+    App.openWindow("wfinfo");
+
+    // Update databases async
+    execPython("database").catch(print);
+
+    // Parse image
+    const pyOut = await execPython("parser", `${SCREENSHOT_PATH} ${numRewards}`);
+
+    // Set value or warn if unable to parse
+    try {
+        rewards.value = JSON.parse(pyOut);
+    } catch {
+        console.warn(`Unable to parse script output as JSON: ${pyOut}`);
+        App.closeWindow("wfinfo");
+    }
+};
+
+const rewards = Variable();
 
 const logPath = getLogPath();
 if (fileExists(logPath)) {
-    console.log(`[INFO] Warframe EE.log path: ${logPath}`);
-
-    try {
-        if (keybind && exec("wmctrl -m").split("\n")[0].includes("Hyprland")) {
-            console.log("[INFO] Detected window manager as Hyprland. Registering keybind...");
-            // Unbind then rebind to avoid duplicate binds
-            execAsync(`hyprctl keyword unbind '${keybind}'`)
-                .then(() =>
-                    execAsync(`hyprctl keyword bindn '${keybind},exec,${App.configDir}/../trigger.sh'`).catch(print)
-                )
-                .catch(print);
-        }
-    } catch (e) {
-        // Ignore spawn error cause no wmctrl
-        if (!(e instanceof GLib.SpawnError)) throw e;
-    }
-
-    globalThis.trigger = async () => {
-        debug("Triggered!");
-
-        // Screenshot
-        const monitors = JSON.parse(await execAsync("wlr-randr --json"));
-        const window = App.getWindow("wfinfo").window;
-        const monitor = window.get_display().get_monitor_at_window(window);
-        const { name: output } = monitors.find(
-            m => m.make === monitor.get_manufacturer() && m.model === monitor.get_model()
-        );
-        await execAsync(`grim -l 0 -o '${output}' ${SCREENSHOT_PATH}`);
-
-        // Get number of rewards and open loading
-        const numRewards = await execPython("num_rewards", SCREENSHOT_PATH);
-        rewards.value = parseInt(numRewards, 10);
-        App.openWindow("wfinfo");
-
-        // Update databases async
-        execPython("database").catch(print);
-
-        // Parse image
-        const pyOut = await execPython("parser", `${SCREENSHOT_PATH} ${numRewards}`);
-
-        // Set value or warn if unable to parse
-        try {
-            rewards.value = JSON.parse(pyOut);
-        } catch {
-            console.warn(`Unable to parse script output as JSON: ${pyOut}`);
-            App.closeWindow("wfinfo");
-        }
-    };
-
-    const rewards = Variable();
+    console.log(`[INFO] Monitoring Warframe log at ${logPath}`);
     subprocess(["tail", "-f", logPath], out => {
         if (
             out.includes("Pause countdown done") ||
@@ -167,54 +149,64 @@ if (fileExists(logPath)) {
         )
             trigger().catch(print);
     });
-
-    const RewardsDisplay = () =>
-        Box().hook(rewards, self => {
-            if (Array.isArray(rewards.value)) self.children = rewards.value.map(RewardDisplay);
-            else if (Number.isInteger(rewards.value))
-                self.children = Array.from({ length: rewards.value }, (_, i) => i).map(LoadingDisplay);
-        });
-
-    MainWindow = () =>
-        Window({
-            name: "wfinfo",
-            visible: false,
-            layer: "overlay",
-            anchor: ["top", "bottom"],
-            exclusivity: "ignore",
-            keymode: "none",
-            child: Box({ vertical: true, children: [Spacer(), RewardsDisplay()] }),
-            setup: self => {
-                // Allow click through
-                const dummyRegion = new Cairo.Region();
-                Utils.timeout(1, () =>
-                    self.on("size-allocate", () => self.window.input_shape_combine_region(dummyRegion, 0, 0))
-                );
-
-                let timeout;
-                self.hook(rewards, () => {
-                    if (Array.isArray(rewards.value) && rewards.value.length) {
-                        debug("Got rewards:", rewards.value);
-
-                        // Try close when reward choosing over or in 15 seconds
-                        timeout?.destroy();
-                        execPython("time_left", SCREENSHOT_PATH).then(out => {
-                            const timeLeft = Math.min(15, out) || 15;
-                            debug(`Closing GUI in ${timeLeft} seconds...`);
-                            const now = Date.now();
-                            timeout = setTimeout(() => {
-                                App.closeWindow(self.name);
-                                debug(`Closed GUI after ${(Date.now() - now) / 1000} seconds.`);
-                            }, timeLeft * 1000);
-                        });
-                    }
-                });
-            },
-        });
 } else {
-    console.warn("[WARNING] Unable to find Warframe EE.log. Auto rewards detection will not be available.");
-    MainWindow = () => null;
-    globalThis.trigger = async () => {};
+    console.log("[WARNING] Unable to find Warframe's EE.log. Auto rewards detection will not be available.");
 }
 
-export default MainWindow;
+if (keybind) {
+    execAsync("which wmctrl")
+        .then(async () => {
+            const wmName = (await execAsync("wmctrl -m")).split("\n")[0];
+            if (wmName.includes("Hyprland")) {
+                console.log("[INFO] Detected window manager as Hyprland. Registering keybind...");
+                // Unbind then rebind to avoid duplicate binds
+                await execAsync(`hyprctl keyword unbind '${keybind}'`);
+                execAsync(`hyprctl keyword bindn '${keybind},exec,${App.configDir}/../trigger.sh'`).catch(print);
+            }
+        })
+        .catch(() => console.log("[WARNING] wmctrl is required to automatically create a keybind."));
+}
+
+const RewardsDisplay = () =>
+    Box().hook(rewards, self => {
+        if (Array.isArray(rewards.value)) self.children = rewards.value.map(RewardDisplay);
+        else if (Number.isInteger(rewards.value))
+            self.children = Array.from({ length: rewards.value }, (_, i) => i).map(LoadingDisplay);
+    });
+
+export default () =>
+    Window({
+        name: "wfinfo",
+        visible: false,
+        layer: "overlay",
+        anchor: ["top", "bottom"],
+        exclusivity: "ignore",
+        keymode: "none",
+        child: Box({ vertical: true, children: [Spacer(), RewardsDisplay()] }),
+        setup: self => {
+            // Allow click through
+            const dummyRegion = new Cairo.Region();
+            Utils.timeout(1, () =>
+                self.on("size-allocate", () => self.window.input_shape_combine_region(dummyRegion, 0, 0))
+            );
+
+            let timeout;
+            self.hook(rewards, () => {
+                if (Array.isArray(rewards.value) && rewards.value.length) {
+                    debug("Got rewards:", rewards.value);
+
+                    // Try close when reward choosing over or in 15 seconds
+                    timeout?.destroy();
+                    execPython("time_left", SCREENSHOT_PATH).then(out => {
+                        const timeLeft = Math.min(15, out) || 15;
+                        debug(`Closing GUI in ${timeLeft} seconds...`);
+                        const now = Date.now();
+                        timeout = setTimeout(() => {
+                            App.closeWindow(self.name);
+                            debug(`Closed GUI after ${(Date.now() - now) / 1000} seconds.`);
+                        }, timeLeft * 1000);
+                    });
+                }
+            });
+        },
+    });

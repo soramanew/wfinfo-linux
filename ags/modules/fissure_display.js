@@ -1,5 +1,5 @@
 import Cairo from "cairo";
-import { logPath as defaultLogPath, keybind } from "../config.user.js";
+import { autodetect, logPath as defaultLogPath, keybind } from "../config.user.js";
 import { CACHE_DIR, debug, fileExists } from "../lib.js";
 const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, HOME, readFile, writeFile, subprocess } = Utils;
@@ -138,19 +138,19 @@ globalThis.trigger = async () => {
 
 const rewards = Variable();
 
-const logPath = getLogPath();
-if (fileExists(logPath)) {
-    console.log(`[INFO] Monitoring Warframe log at ${logPath}`);
-    subprocess(["tail", "-f", logPath], out => {
-        if (
-            out.includes("Pause countdown done") ||
-            out.includes("Got rewards") ||
-            out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
-        )
-            trigger().catch(print);
-    });
-} else {
-    console.log("[WARNING] Unable to find Warframe's EE.log. Auto rewards detection will not be available.");
+if (autodetect) {
+    const logPath = getLogPath();
+    if (fileExists(logPath)) {
+        console.log(`[INFO] Monitoring Warframe log at ${logPath}`);
+        subprocess(["tail", "-f", logPath], out => {
+            if (
+                out.includes("Pause countdown done") ||
+                out.includes("Got rewards") ||
+                out.includes("Created /Lotus/Interface/ProjectionRewardChoice.swf")
+            )
+                trigger().catch(print);
+        });
+    } else console.log("[WARNING] Unable to find Warframe's EE.log. Auto rewards detection will not be available.");
 }
 
 if (keybind) {
@@ -194,6 +194,9 @@ export default () =>
             self.hook(rewards, () => {
                 if (Array.isArray(rewards.value) && rewards.value.length) {
                     debug("Got rewards:", rewards.value);
+
+                    // Idk whether this helps but sometimes the window doesn't show up even though it says it's visible
+                    self.show_all();
 
                     // Try close when reward choosing over or in 15 seconds
                     timeout?.destroy();

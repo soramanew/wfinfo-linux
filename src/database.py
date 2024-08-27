@@ -118,7 +118,9 @@ def _process_relics(relics: dict[str, dict[str, bool | str]]) -> dict:
                     if r in relic:
                         drop = relic[r]
                     else:
-                        drop = f"{"2x " if rarity == "uncommon" else ""}Forma Blueprint"
+                        drop = (
+                            f"{"2 X " if rarity == "uncommon" else ""}Forma Blueprint"
+                        )
                     new_relic["drops"][rarity].append(drop)
                     items[_normalise_item_name(drop)]["vaulted"] = relic["vaulted"]
 
@@ -145,15 +147,15 @@ def _process_prices(
     """
 
     # Manually forma add cause not in price db
-    words = {"Forma"}
-    chars = set("Forma")
+    words = {"2", "X", "Forma"}
+    chars = set("2 X Forma")
     endings = set()
     new_prices = {
         "Forma Blueprint": {
             "price": {"platinum": 11.67, "ducats": 0},
             "sold": {"today": 0, "yesterday": 0},
         },
-        "2x Forma Blueprint": {
+        "2 X Forma Blueprint": {
             "price": {"platinum": 23.33, "ducats": 0},
             "sold": {"today": 0, "yesterday": 0},
         },

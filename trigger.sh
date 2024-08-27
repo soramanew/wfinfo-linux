@@ -1,3 +1,3 @@
 #!/bin/fish
 
-pgrep -f 'ags -b wfinfo -c' && ags -b wfinfo -r 'trigger();'
+pgrep -f 'ags -b wfinfo -c' && ags -b wfinfo -r 'trigger().catch(print);'

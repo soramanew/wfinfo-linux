@@ -1,12 +1,15 @@
 {
     "cSpell.words": [
         "Akbronco",
+        "argmax",
         "astype",
         "BARUUK",
         "bindn",
         "compatdata",
+        "dtype",
         "eqmt",
         "fromarray",
+        "frombuffer",
         "getpixel",
         "grimblast",
         "GRINEER",
@@ -16,6 +19,7 @@
         "Hyprland",
         "imread",
         "imwrite",
+        "itemsize",
         "keybind",
         "keymode",
         "ndarray",

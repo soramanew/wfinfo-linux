@@ -4,7 +4,7 @@ from parser import get_scale
 from PIL import Image
 from tesserocr import PyTessBaseAPI
 
-from theme import Theme
+import theme
 
 _TIME_COLOUR = 235, 235, 235
 _TIME_SIZE = 54
@@ -20,7 +20,7 @@ if __name__ == "__main__":
         cropped = image.crop((left, top, left + size, top + size))
 
         # Strip everything but text
-        stripped = Theme.strip(cropped, filter_fn=lambda pxl: pxl >= _TIME_COLOUR)
+        stripped = theme.strip(cropped, filter_fn=lambda pxl: pxl >= _TIME_COLOUR)
 
         # Increase size cause apparently tesseract doesn't do so well with small images
         scaled = stripped.resize((stripped.width * 8, stripped.height * 8))

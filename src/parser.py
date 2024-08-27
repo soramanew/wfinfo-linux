@@ -10,7 +10,7 @@ from platformdirs import user_cache_path
 from tesserocr import PyTessBaseAPI
 
 import database as db
-from theme import Theme
+import theme
 
 # Define save dir path and ensure it exists
 _SAVE_DIR = user_cache_path("wfinfo") / "images"
@@ -107,7 +107,7 @@ def image_to_string(
     """
 
     if not preprocessed:
-        image = Theme.strip(image)
+        image = theme.strip(image)
 
     # Tesseract image to string
     tess.SetImage(image)
@@ -141,6 +141,16 @@ def image_to_string(
     return checked.strip()
 
 
+def get_bottom_line_rewards(image: Image) -> Image:
+    scale = get_scale(image)
+    width = _REWARD_TOTAL_WIDTH * scale
+    left = (image.width - width) / 2
+    bottom = image.height / 2 - _REWARD_BOTTOM * scale
+    top = bottom - _LINE_HEIGHT * scale
+
+    return image.crop((left, top, left + width, bottom))
+
+
 def get_num_rewards(image: Image) -> int:
     """Calculates the number of rewards.
 
@@ -153,13 +163,7 @@ def get_num_rewards(image: Image) -> int:
         int: The number of rewards.
     """
 
-    scale = get_scale(image)
-    width = _REWARD_TOTAL_WIDTH * scale
-    left = (image.width - width) / 2
-    bottom = image.height / 2 - _REWARD_BOTTOM * scale
-    top = bottom - _LINE_HEIGHT * scale
-
-    rewards = image_to_string(image.crop((left, top, left + width, bottom)))
+    rewards = image_to_string(get_bottom_line_rewards(image))
 
     return len(re.findall("|".join(db.item_endings), rewards))
 
@@ -177,6 +181,9 @@ def parse_image(image: Image, num_rewards: int = None) -> list[str]:
 
     if num_rewards is None:
         num_rewards = get_num_rewards(image)
+
+    # Initialise theme module for image
+    theme.init(image)
 
     images = cut_image(image, num_rewards)
     line_height = _LINE_HEIGHT * get_scale(image)

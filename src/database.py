@@ -13,15 +13,31 @@ _PRICES_PATH = _RESOURCE_DIR / "prices.json"
 _CHARS_PATH = _RESOURCE_DIR / "whitelist_chars.txt"
 _ENDINGS_PATH = _RESOURCE_DIR / "item_endings.txt"
 _WORDS_PATH = _RESOURCE_DIR / "words.txt"
+_RELICS_PATH = _RESOURCE_DIR / "relics.json"
 
 _DATA_API = "api.warframestat.us"
 _UPDATE_THRESHOLD = 3600 * 4  # 4 hours
 _BLUEPRINT_ENDINGS = "Systems", "Neuroptics", "Chassis", "Harness", "Wings", "Prime"
 
-prices = {}
+items = {}
 whitelist_chars = ""
 item_endings = []
 words = []
+
+
+def _normalise_item_name(name: str) -> str:
+    """Normalises the given item's name.
+
+    This basically just adds 'Blueprint' onto the end of the name if needed.
+
+    Args:
+        name (str): The name to normalise.
+
+    Returns:
+        str: The normalised name.
+    """
+
+    return f"{name} Blueprint" if name.split()[-1] in _BLUEPRINT_ENDINGS else name
 
 
 def _get_remote_data(data: str):
@@ -65,12 +81,50 @@ def _process_items(
             # Ignore items with no ducat value (i.e. whole items not parts)
             # cause some items require others (e.g. Akbronco Prime requires 2 Bronco Primes)
             if "ducats" in items[item]["parts"][part]:
-                ducats[
-                    f"{part} Blueprint"
-                    if part.split()[-1] in _BLUEPRINT_ENDINGS
-                    else part
-                ] = int(items[item]["parts"][part]["ducats"])
+                ducats[_normalise_item_name(part)] = int(
+                    items[item]["parts"][part]["ducats"]
+                )
     return ducats
+
+
+def _process_relics(relics: dict[str, dict[str, bool | str]]) -> dict:
+    """Processes relic data from the remote.
+
+    Args:
+        relics (dict[str, dict[str, bool  |  str]]): The relic data.
+
+    Returns:
+        dict[str, dict[str, bool | str | dict[str, tuple[str, str, str] | tuple[str, str] | tuple[str]]]]: The processed data.
+    """
+
+    rarities = ["rare", "uncommon", "common"]
+
+    new_relics = {}
+    for tier, tier_dict in relics.items():
+        new_relics[tier] = {}
+
+        for name, relic in tier_dict.items():
+            new_relic = {
+                "vaulted": relic["vaulted"],
+                "name": name,
+                "tier": tier,
+                "drops": {"common": [], "uncommon": [], "rare": []},
+            }
+
+            for n, rarity in enumerate(rarities):
+                for i in range(1, n + 2):
+                    r = f"{rarity}{i}"
+                    # Cause raw data ignores forma
+                    if r in relic:
+                        drop = relic[r]
+                    else:
+                        drop = f"{"2x " if rarity == "uncommon" else ""}Forma Blueprint"
+                    new_relic["drops"][rarity].append(drop)
+                    items[_normalise_item_name(drop)]["vaulted"] = relic["vaulted"]
+
+            new_relics[tier][name] = new_relic
+
+    return new_relics
 
 
 def _process_prices(
@@ -98,7 +152,11 @@ def _process_prices(
         "Forma Blueprint": {
             "price": {"platinum": 11.67, "ducats": 0},
             "sold": {"today": 0, "yesterday": 0},
-        }
+        },
+        "2x Forma Blueprint": {
+            "price": {"platinum": 23.33, "ducats": 0},
+            "sold": {"today": 0, "yesterday": 0},
+        },
     }
 
     for item in prices:
@@ -140,13 +198,15 @@ def load_dbs() -> None:
         and _CHARS_PATH.exists()
         and _ENDINGS_PATH.exists()
         and _WORDS_PATH.exists()
+        and _RELICS_PATH.exists()
     ):
-        global prices, whitelist_chars, item_endings, words
+        global items, whitelist_chars, item_endings, words, relics
 
-        prices = json.loads(_PRICES_PATH.read_text())
+        items = json.loads(_PRICES_PATH.read_text())
         whitelist_chars = _CHARS_PATH.read_text()
         item_endings = _ENDINGS_PATH.read_text().split()
         words = _WORDS_PATH.read_text().split()
+        relics = json.loads(_RELICS_PATH.read_text())
     else:
         update_dbs()
 
@@ -161,6 +221,7 @@ def update_dbs() -> None:
             and _CHARS_PATH.exists()
             and _ENDINGS_PATH.exists()
             and _WORDS_PATH.exists()
+            and _RELICS_PATH.exists()
         )
         or json.loads(_PRICES_PATH.read_text())["updated"] < now - _UPDATE_THRESHOLD
     ):
@@ -172,18 +233,20 @@ def update_dbs() -> None:
             print("Exiting.")
             sys.exit()
         else:
-            global prices, whitelist_chars, item_endings, words
+            global items, whitelist_chars, item_endings, words, relics
 
             ducats = _process_items(filtered_items["eqmt"])
-            prices, whitelist_chars, item_endings, words = _process_prices(
+            items, whitelist_chars, item_endings, words = _process_prices(
                 price_data, ducats
             )
-            prices["updated"] = now
+            items["updated"] = now
+            relics = _process_relics(filtered_items["relics"])
 
-            _PRICES_PATH.write_text(json.dumps(prices))
+            _PRICES_PATH.write_text(json.dumps(items))
             _CHARS_PATH.write_text(whitelist_chars)
             _ENDINGS_PATH.write_text("\n".join(item_endings))
             _WORDS_PATH.write_text("\n".join(words))
+            _RELICS_PATH.write_text(json.dumps(relics))
 
 
 # Update dbs if called as main script otherwise load dbs

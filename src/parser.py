@@ -208,7 +208,7 @@ def parse_image(image: Image, num_rewards: int = None) -> list[str]:
             off += line_height
 
         reward = reward.strip()
-        rewards.append(reward if reward in db.prices else "INVALID")
+        rewards.append(reward if reward in db.items else "INVALID")
 
     return rewards
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
         print(
             json.dumps(
                 [
-                    (invalid if r == "INVALID" else {"name": r, **db.prices[r]})
+                    (invalid if r == "INVALID" else {"name": r, **db.items[r]})
                     for r in parse_image(
                         image, int(sys.argv[2]) if len(sys.argv) > 2 else None
                     )

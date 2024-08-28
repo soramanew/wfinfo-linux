@@ -20,8 +20,8 @@ This is a limited remake of [wfinfo](https://wfinfo.warframestat.us) in Python a
 -   `dart-sass` - for compiling GUI styles
 -   `grim` - for screenshots
 -   `wlr-randr` - for getting active monitor for screenshots
+-   `wmctrl` - for WM/DE detection
 -   `fish` - optional, for `.sh` scripts
--   `wmctrl` - optional, for auto keybind creation
 
 ## Installation
 
@@ -30,7 +30,7 @@ Clone this repo and install all dependencies.
 On Arch Linux (using `yay` AUR helper):
 
 ```sh
-yay -S --needed python tesseract-data-eng tesseract aylurs-gtk-shell-git dart-sass grim wlr-randr fish wmctrl
+yay -S --needed python tesseract-data-eng tesseract aylurs-gtk-shell-git dart-sass grim wlr-randr wmctrl fish
 ```
 
 ## Usage

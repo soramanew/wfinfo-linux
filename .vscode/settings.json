@@ -23,6 +23,7 @@
         "imwrite",
         "itemsize",
         "keybind",
+        "keybinds",
         "keymode",
         "ndarray",
         "Neuroptics",

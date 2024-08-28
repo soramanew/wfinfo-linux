@@ -1,7 +1,7 @@
 import Cairo from "cairo";
-import { autodetect, logPath as defaultLogPath, keybind } from "../config.user.js";
-import { CACHE_DIR, debug, fileExists } from "../lib/misc.js";
-const { Window, Box, Label, Icon, CenterBox } = Widget;
+import { autodetect, logPath as defaultLogPath, keybinds } from "../config.user.js";
+import { CACHE_DIR, createKeybind, debug, fileExists } from "../lib/misc.js";
+const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, HOME, readFile, writeFile, subprocess } = Utils;
 
 const SCREENSHOT_PATH = `${CACHE_DIR}/../screenshot.png`;
@@ -167,19 +167,7 @@ if (autodetect) {
     } else console.log("[WARNING] Unable to find Warframe's EE.log. Auto rewards detection will not be available.");
 }
 
-if (keybind) {
-    execAsync("which wmctrl")
-        .then(async () => {
-            const wmName = (await execAsync("wmctrl -m")).split("\n")[0];
-            if (wmName.includes("Hyprland")) {
-                console.log("[INFO] Detected window manager as Hyprland. Registering keybind...");
-                // Unbind then rebind to avoid duplicate binds
-                await execAsync(`hyprctl keyword unbind '${keybind}'`);
-                execAsync(`hyprctl keyword bindn '${keybind},exec,${App.configDir}/../trigger.sh'`).catch(print);
-            }
-        })
-        .catch(() => console.log("[WARNING] wmctrl is required to automatically create a keybind."));
-}
+if (keybinds.fissure) createKeybind(keybinds.fissure, `${App.configDir}/../trigger.sh`);
 
 const RewardsDisplay = () =>
     Box().hook(rewards, self => {

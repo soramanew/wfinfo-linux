@@ -249,8 +249,12 @@ def load_dbs() -> None:
         update_dbs()
 
 
-def update_dbs() -> None:
-    """Updates databases if they do not exist or were last updated before the threshold interval."""
+def update_dbs() -> bool:
+    """Updates databases if they do not exist or were last updated before the threshold interval.
+
+    Returns:
+        bool: Whether the databases were updated or not.
+    """
 
     now = time.time()
     if (
@@ -286,9 +290,18 @@ def update_dbs() -> None:
             _WORDS_PATH.write_text("\n".join(words))
             _RELICS_PATH.write_text(json.dumps(relics))
 
+            return True
+    return False
+
 
 # Update dbs if called as main script otherwise load dbs
 if __name__ == "__main__":
-    update_dbs()
+    updated = update_dbs()
+    if updated:
+        print("Updated databases successfully!")
+    else:
+        print(
+            f"Databases updated within {_UPDATE_THRESHOLD / 3600:.1f} hours. Ignoring."
+        )
 else:
     load_dbs()

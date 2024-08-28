@@ -1,5 +1,6 @@
 import { CACHE_DIR } from "./lib.js";
 import FissureDisplay from "./modules/fissure_display.js";
+import RelicView from "./modules/relic_view.js";
 const { execAsync, ensureDirectory } = Utils;
 
 ensureDirectory(CACHE_DIR);
@@ -13,5 +14,5 @@ reloadCss().catch(print);
 App.addIcons(`${App.configDir}/assets/icons`);
 App.config({
     stackTraceOnError: true,
-    windows: [FissureDisplay()],
+    windows: [FissureDisplay(), RelicView()],
 });

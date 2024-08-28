@@ -38,7 +38,11 @@ const RelicTitle = (relic, dropsRevealer) =>
     Button({
         className: "relic-title",
         child: Box({
-            children: [Label({ hexpand: true, xalign: 0, label: relic.name }), RelicWorth(relic.price)],
+            children: [
+                Label(relic.name),
+                Label({ hexpand: true, xalign: 0, label: relic.vaulted ? "Vaulted" : "" }),
+                RelicWorth(relic.price),
+            ],
         }),
         onClicked: () => {
             if (!dropsRevealer.child.children.length)
@@ -86,7 +90,7 @@ const Tier = ([tier, relics]) => {
     });
 };
 
-const Main = () =>
+export default () =>
     Window({
         name: "wfinfo-relics",
         visible: true, //false,
@@ -104,11 +108,3 @@ const Main = () =>
             }),
         }),
     });
-
-App.addIcons(`${App.configDir}/../assets/icons`);
-console.time();
-App.config({
-    stackTraceOnError: true,
-    windows: [Main()],
-});
-console.timeEnd();

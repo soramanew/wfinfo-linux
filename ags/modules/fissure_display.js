@@ -15,7 +15,7 @@ const execPython = (script, args = "", async = true) =>
 
 const getDimensions = () => {
     // For multi-monitor, get monitor window is on
-    const window = App.getWindow("wfinfo").window;
+    const window = App.getWindow("wfinfo-fissure").window;
     const { width, height } = window.get_display().get_monitor_at_window(window).get_geometry();
     const scale = width / height > 16 / 9 ? height / 1080 : width / 1920;
     const rewardWidth = 235 * scale; // Per reward no spacing
@@ -34,7 +34,7 @@ const hookWindowOpen = (self, fn) =>
     self.hook(
         App,
         (_, name, visible) => {
-            if (visible && name === "wfinfo") fn(self);
+            if (visible && name === "wfinfo-fissure") fn(self);
         },
         "window-toggled"
     );
@@ -109,7 +109,7 @@ globalThis.trigger = async () => {
 
     // Screenshot
     const monitors = JSON.parse(await execAsync("wlr-randr --json"));
-    const window = App.getWindow("wfinfo").window;
+    const window = App.getWindow("wfinfo-fissure").window;
     const monitor = window.get_display().get_monitor_at_window(window);
     const { name: output } = monitors.find(
         m => m.make === monitor.get_manufacturer() && m.model === monitor.get_model()
@@ -119,7 +119,7 @@ globalThis.trigger = async () => {
     // Get number of rewards and open loading
     const numRewards = await execPython("num_rewards", SCREENSHOT_PATH);
     rewards.value = parseInt(numRewards, 10);
-    App.openWindow("wfinfo");
+    App.openWindow("wfinfo-fissure");
 
     // Update databases async
     execPython("database").catch(print);
@@ -132,7 +132,7 @@ globalThis.trigger = async () => {
         rewards.value = JSON.parse(pyOut);
     } catch {
         console.warn(`Unable to parse script output as JSON: ${pyOut}`);
-        App.closeWindow("wfinfo");
+        App.closeWindow("wfinfo-fissure");
     }
 };
 
@@ -176,7 +176,7 @@ const RewardsDisplay = () =>
 
 export default () =>
     Window({
-        name: "wfinfo",
+        name: "wfinfo-fissure",
         visible: false,
         layer: "overlay",
         anchor: ["top", "bottom"],

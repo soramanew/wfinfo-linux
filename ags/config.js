@@ -2,6 +2,7 @@ import { keybinds } from "./config.user.js";
 import { CACHE_DIR, createKeybind } from "./lib/misc.js";
 import FissureDisplay from "./modules/fissure_display.js";
 import RelicView from "./modules/relic_view.js";
+import Toolbar from "./modules/toolbar.js";
 const { execAsync, ensureDirectory } = Utils;
 
 ensureDirectory(CACHE_DIR);
@@ -17,7 +18,7 @@ reloadCss();
 App.addIcons(`${App.configDir}/assets/icons`);
 App.config({
     stackTraceOnError: true,
-    windows: [FissureDisplay(), RelicView()],
+    windows: [FissureDisplay(), Toolbar(), RelicView()],
 });
 
 const binPath = `${App.configDir}/../wfinfo`;
@@ -41,6 +42,7 @@ const windowsOpen = new Proxy(
         },
     }))(new Set())
 );
+windowsOpen["wfinfo-toolbar"] = true;
 
 globalThis.toggleGui = () => {
     // Disconnect window watcher so it doesn't register open/close from toggle
@@ -48,8 +50,8 @@ globalThis.toggleGui = () => {
     // Windows are tracked in order of set so they are opened/closed in that order
     for (const window of Object.keys(windowsOpen))
         if (windowsOpen[window]) {
-            if (opened) App.openWindow(window);
-            else App.closeWindow(window);
+            if (opened) App.closeWindow(window);
+            else App.openWindow(window);
         }
     // Reconnect to track manual open/close
     id = connectWindows();

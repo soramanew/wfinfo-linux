@@ -5,10 +5,11 @@ cd (dirname (realpath (status filename))) || exit
 set script_name (basename (status filename))
 count $argv >/dev/null || set no_args
 
-argparse -n $script_name -X 0 -x 'h,t,g' \
+argparse -n $script_name -X 0 -x 'h,t,g,reload-css' \
     'h/help' \
     't/trigger' \
     'g/toggle-gui' \
+    'reload-css' \
     -- $argv
 or exit
 
@@ -18,11 +19,13 @@ if set -q _flag_h
     echo '    '$script_name' [ -h | --help ]'
     echo '    '$script_name' [ -t | --trigger ]'
     echo '    '$script_name' [ -g | --toggle-gui ]'
+    echo '    '$script_name' [ --reload-css ]'
     echo
     echo 'Options:'
     echo '    -h, --help            Print this help message and exit'
     echo '    -t, --trigger         Trigger manual fissure rewards detection'
     echo '    -g, --toggle-gui      Toggle the GUI layers'
+    echo '        --reload-css      Reload GUI styles'
 
     exit
 end
@@ -54,4 +57,8 @@ end
 
 if set -q _flag_g
     run toggleGui
+end
+
+if set -q _flag_reload_css
+    run reloadCss
 end

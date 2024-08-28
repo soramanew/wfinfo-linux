@@ -122,7 +122,6 @@ export default () =>
         layer: "overlay",
         exclusivity: "ignore",
         keymode: "on-demand",
-        anchor: ["right"],
         child: Box({
             className: "relic-view",
             child: Scrollable({

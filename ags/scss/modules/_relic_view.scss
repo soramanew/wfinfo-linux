@@ -1,7 +1,6 @@
 @use "../lib/colour" as c;
 @use "../lib/rounding";
 @use "../lib/font";
-@use "../lib/anim";
 
 .relic-view {
     @include rounding.normal;

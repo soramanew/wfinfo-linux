@@ -42,6 +42,7 @@
         "tesserocr",
         "vectorize",
         "venv",
+        "vexpand",
         "VITRUVIAN",
         "vpack",
         "vscroll",

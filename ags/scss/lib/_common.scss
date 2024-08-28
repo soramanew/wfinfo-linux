@@ -3,6 +3,15 @@
 @use "anim";
 @use "font";
 
+tooltip {
+    @include rounding.normal;
+    @include font.reading;
+
+    background-color: c.$secondaryContainer;
+    color: c.$onSecondaryContainer;
+    border: 0.034rem solid c.$inverseSurface;
+}
+
 scrollbar {
     trough {
         @include rounding.full;
@@ -36,4 +45,8 @@ scrollbar {
 
 .subtext {
     color: c.$subtext;
+}
+
+.overlay {
+    background-color: change-color(c.$background, $alpha: 0.5);
 }

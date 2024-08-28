@@ -1,0 +1,54 @@
+@use "../lib/colour" as c;
+@use "../lib/rounding";
+@use "../lib/font";
+@use "../lib/anim";
+@use "../lib/border";
+
+.toolbar {
+    @include rounding.normal;
+    @include border.elevation;
+
+    background-color: c.$background;
+    color: c.$onBackground;
+    margin-bottom: 1.02rem;
+}
+
+.toolbar-button {
+    @include anim.element-decel;
+    @include font.massive;
+
+    padding: 0.68rem 1.02rem;
+
+    &:first-child {
+        border-top-left-radius: rounding.$medium;
+        border-bottom-left-radius: rounding.$medium;
+    }
+
+    &:last-child {
+        border-top-right-radius: rounding.$medium;
+        border-bottom-right-radius: rounding.$medium;
+    }
+
+    &:hover,
+    &:focus {
+        background-color: c.$layer0Hover;
+    }
+
+    &:active {
+        background-color: c.$layer0Active;
+    }
+}
+
+.toolbar-button-active {
+    background-color: c.$primaryContainer;
+    color: c.$onPrimaryContainer;
+
+    &:hover,
+    &:focus {
+        background-color: mix(c.$primaryContainer, c.$primary, 80%);
+    }
+
+    &:active {
+        background-color: mix(c.$primaryContainer, c.$primary, 90%);
+    }
+}

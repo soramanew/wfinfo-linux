@@ -1,4 +1,5 @@
-import { CACHE_DIR, setupCursorHover } from "../lib.js";
+import { setupCursorHover } from "../lib/cursor_hover.js";
+import { CACHE_DIR } from "../lib/misc.js";
 const { Window, Box, Label, Icon, Button, Revealer, Scrollable } = Widget;
 const { readFile } = Utils;
 

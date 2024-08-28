@@ -1,4 +1,4 @@
-import { CACHE_DIR } from "./lib.js";
+import { CACHE_DIR } from "./lib/misc.js";
 import FissureDisplay from "./modules/fissure_display.js";
 import RelicView from "./modules/relic_view.js";
 const { execAsync, ensureDirectory } = Utils;

@@ -1,6 +1,6 @@
 import Cairo from "cairo";
 import { autodetect, logPath as defaultLogPath, keybind } from "../config.user.js";
-import { CACHE_DIR, debug, fileExists } from "../lib.js";
+import { CACHE_DIR, debug, fileExists } from "../lib/misc.js";
 const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, HOME, readFile, writeFile, subprocess } = Utils;
 

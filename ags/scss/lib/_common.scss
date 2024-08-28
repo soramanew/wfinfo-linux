@@ -5,6 +5,7 @@
 scrollbar {
     trough {
         @include rounding.full;
+
         min-width: 0.545rem;
         background-color: transparent;
     }
@@ -12,6 +13,7 @@ scrollbar {
     slider {
         @include rounding.full;
         @include anim.element-decel;
+
         min-width: 0.273rem;
         min-height: 2.045rem;
         background-color: transparentize(c.$onSurfaceVariant, 0.7);

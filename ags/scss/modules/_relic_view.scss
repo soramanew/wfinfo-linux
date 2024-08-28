@@ -1,0 +1,90 @@
+@use "../lib/colour" as c;
+@use "../lib/rounding";
+@use "../lib/font";
+@use "../lib/anim";
+
+.relic-view {
+    @include rounding.normal;
+
+    background-color: c.$background;
+    padding: 0.68rem 1.02rem;
+}
+
+.relic-tier {
+    @include rounding.normal;
+    @include font.title;
+    @include font.large;
+
+    background-color: c.$layer1;
+    color: c.$onLayer1;
+    padding: 0.68rem 1.02rem;
+    margin-top: 0.68rem;
+
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.relic {
+    @include rounding.small;
+    @include font.norm;
+
+    background-color: c.$layer2;
+    color: c.$onLayer2;
+    padding: 0.34rem 0.68rem;
+    margin-top: 0.34rem;
+
+    &:first-child {
+        margin-top: 0.68rem;
+    }
+}
+
+.relic-title {
+    // Vaulted text
+    & > :nth-child(2) {
+        color: c.$subtext;
+    }
+
+    // Spacing
+    & * {
+        margin-left: 0.68rem;
+    }
+
+    & :first-child {
+        margin-left: 0;
+    }
+
+    // Space between price and plat icon
+    & > :last-child > * > :last-child {
+        margin-left: 0.34rem;
+    }
+}
+
+.relic-drop {
+    @include font.main;
+
+    font-size: 1.182rem;
+    margin: 0 1.632rem; // Indentation
+
+    // Spacing
+    & * {
+        margin-left: 0.544rem;
+    }
+
+    & :first-child {
+        margin-left: 0;
+    }
+
+    // Space between prices and icons
+    & > :last-child > * > :last-child {
+        margin-left: 0.272rem;
+    }
+}
+
+$-rarities: "common", "uncommon", "rare";
+$-rarity-colours: #e4b48a, #c4c4c4, #e3c54a;
+@for $i from 1 through 3 {
+    .relic-drop-#{nth($-rarities, $i)} {
+        color: nth($-rarity-colours, $i);
+    }
+}

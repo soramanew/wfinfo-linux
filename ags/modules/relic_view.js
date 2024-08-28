@@ -104,6 +104,7 @@ export default () =>
             className: "relic-view",
             child: Scrollable({
                 hscroll: "never",
+                vscroll: "automatic",
                 child: Box({
                     vertical: true,
                     children: Object.entries(relics).map(Tier),

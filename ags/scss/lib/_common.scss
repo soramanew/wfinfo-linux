@@ -1,0 +1,28 @@
+@use "colour" as c;
+@use "rounding";
+@use "anim";
+
+scrollbar {
+    trough {
+        @include rounding.full;
+        min-width: 0.545rem;
+        background-color: transparent;
+    }
+
+    slider {
+        @include rounding.full;
+        @include anim.element-decel;
+        min-width: 0.273rem;
+        min-height: 2.045rem;
+        background-color: transparentize(c.$onSurfaceVariant, 0.7);
+
+        &:hover,
+        &:focus {
+            background-color: transparentize(c.$onSurfaceVariant, 0.6);
+        }
+
+        &:active {
+            background-color: transparentize(c.$onSurface, 0.5);
+        }
+    }
+}

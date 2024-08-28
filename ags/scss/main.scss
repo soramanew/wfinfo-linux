@@ -1,6 +1,9 @@
 // Unset all styles from GTK theme
 @use "reset";
 
+// Common styles
+@use "lib/common";
+
 // Modules
 @use "modules/fissure_display";
 @use "modules/relic_view";

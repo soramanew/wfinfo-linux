@@ -4,12 +4,14 @@ import RelicView from "./modules/relic_view.js";
 const { execAsync, ensureDirectory } = Utils;
 
 ensureDirectory(CACHE_DIR);
-globalThis.reloadCss = async () => {
-    await execAsync(`sass ${App.configDir}/scss/main.scss ${CACHE_DIR}/style.css`);
-    App.resetCss();
-    App.applyCss(`${CACHE_DIR}/style.css`);
-};
-reloadCss().catch(print);
+globalThis.reloadCss = () =>
+    execAsync(`sass ${App.configDir}/scss/main.scss ${CACHE_DIR}/style.css`)
+        .then(() => {
+            App.resetCss();
+            App.applyCss(`${CACHE_DIR}/style.css`);
+        })
+        .catch(print);
+reloadCss();
 
 App.addIcons(`${App.configDir}/assets/icons`);
 App.config({

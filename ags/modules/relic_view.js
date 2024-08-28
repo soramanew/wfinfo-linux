@@ -40,7 +40,13 @@ const RelicTitle = (relic, dropsRevealer) =>
         child: Box({
             children: [Label({ hexpand: true, xalign: 0, label: relic.name }), RelicWorth(relic.price)],
         }),
-        onClicked: () => (dropsRevealer.revealChild = !dropsRevealer.revealChild),
+        onClicked: () => {
+            if (!dropsRevealer.child.children.length)
+                dropsRevealer.child.children = Object.entries(relic.drops).flatMap(([rarity, drops]) =>
+                    drops.map(d => Drop(d, rarity))
+                );
+            dropsRevealer.revealChild = !dropsRevealer.revealChild;
+        },
     });
 
 const Relic = relic => {
@@ -48,10 +54,7 @@ const Relic = relic => {
         transition: "slide_down",
         transitionDuration: 150,
         revealChild: false,
-        child: Box({
-            vertical: true,
-            children: Object.entries(relic.drops).flatMap(([rarity, drops]) => drops.map(d => Drop(d, rarity))),
-        }),
+        child: Box({ vertical: true }),
     });
     return Box({
         vertical: true,
@@ -65,16 +68,19 @@ const Tier = ([tier, relics]) => {
         transition: "slide_down",
         transitionDuration: 200,
         revealChild: false,
-        child: Box({
-            vertical: true,
-            children: Object.values(relics).map(Relic),
-        }),
+        child: Box({ vertical: true }),
     });
     return Box({
         vertical: true,
         className: "relic-tier",
         children: [
-            Button({ child: Label(tier), onClicked: () => (revealer.revealChild = !revealer.revealChild) }),
+            Button({
+                child: Label(tier),
+                onClicked: () => {
+                    if (!revealer.child.children.length) revealer.child.children = Object.values(relics).map(Relic);
+                    revealer.revealChild = !revealer.revealChild;
+                },
+            }),
             revealer,
         ],
     });

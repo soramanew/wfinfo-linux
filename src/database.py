@@ -142,7 +142,15 @@ def _process_relics(relics: dict[str, dict[str, bool | str]]) -> dict:
                         drop = _normalise_item_name(relic[r])
                         # Don't vault forma
                         if "Forma Blueprint" not in drop:
-                            items[drop]["vaulted"] = relic["vaulted"]
+                            # Partial if different from already existing
+                            if "vaulted" in items[drop]:
+                                i_v = items[drop]["vaulted"]
+                                r_v = relic["vaulted"]
+                                if i_v != "partial":
+                                    if (i_v and not r_v) or (r_v and not i_v):
+                                        items[drop]["vaulted"] = "partial"
+                            else:
+                                items[drop]["vaulted"] = relic["vaulted"]
                     else:
                         # Only missing 2x forma right now
                         drop = (

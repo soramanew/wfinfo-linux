@@ -77,7 +77,8 @@ const SoldDisplay = ({ today, yesterday }) =>
         children: [Label(`${today} sold last 24h`), Label(`${today + yesterday} sold last 48h`)],
     });
 
-const VaultedIndicator = vaulted => (vaulted ? Label({ className: "subtext", label: "Vaulted" }) : null);
+const VaultedIndicator = vaulted =>
+    vaulted ? Label({ className: "subtext", label: `Vaulted${vaulted === "partial" ? " (P)" : ""}` }) : null;
 
 const OtherIndicators = ({ vaulted }) =>
     vaulted

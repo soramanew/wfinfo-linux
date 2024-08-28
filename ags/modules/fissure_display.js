@@ -59,6 +59,20 @@ const getLogPath = () => {
     return logPath;
 };
 
+const VaultedIndicator = vaulted =>
+    Label({ className: "subtext", label: `Vaulted${vaulted === "partial" ? " (P)" : ""}` });
+
+const OtherIndicators = ({ vaulted }) =>
+    vaulted
+        ? Box({
+              setup: self => {
+                  if (vaulted) self.pack_end(VaultedIndicator(vaulted), false, false, 0);
+              },
+          })
+        : Label(" "); // To take up the same space as if it were there
+
+const RewardName = ({ name }) => Label({ className: "reward-name", label: name, wrap: true, justification: "center" });
+
 const PriceDisplay = ({ platinum, ducats }) =>
     Box({
         hexpand: true,
@@ -77,18 +91,6 @@ const SoldDisplay = ({ today, yesterday }) =>
         children: [Label(`${today} sold last 24h`), Label(`${today + yesterday} sold last 48h`)],
     });
 
-const VaultedIndicator = vaulted =>
-    vaulted ? Label({ className: "subtext", label: `Vaulted${vaulted === "partial" ? " (P)" : ""}` }) : null;
-
-const OtherIndicators = ({ vaulted }) =>
-    vaulted
-        ? Box({
-              setup: self => {
-                  self.pack_end(VaultedIndicator(vaulted), false, false, 0);
-              },
-          })
-        : null;
-
 const DisplayBase = (i, child) => {
     const { width, spacing } = getDimensions();
     return Box({
@@ -100,17 +102,14 @@ const DisplayBase = (i, child) => {
 const RewardDisplay = (reward, i) =>
     DisplayBase(
         i,
-        CenterBox({
+        Box({
             vertical: true,
-            startWidget: OtherIndicators(reward),
-            centerWidget: Box({
-                vertical: true,
-                children: [
-                    Label({ className: "reward-name", label: reward.name, wrap: true, justification: "center" }),
-                    PriceDisplay(reward.price),
-                    SoldDisplay(reward.sold),
-                ],
-            }),
+            setup: self => {
+                self.pack_start(OtherIndicators(reward), false, false, 0);
+                self.pack_start(RewardName(reward), true, true, 0);
+                self.pack_end(SoldDisplay(reward.sold), false, false, 0);
+                self.pack_end(PriceDisplay(reward.price), false, false, 0);
+            },
         })
     );
 

@@ -16,6 +16,7 @@
         "GRINEER",
         "hexpand",
         "hpack",
+        "hscroll",
         "hyprctl",
         "Hyprland",
         "imread",
@@ -45,6 +46,7 @@
         "Warframe",
         "warframestat",
         "wfinfo",
-        "wmctrl"
+        "wmctrl",
+        "xalign"
     ]
 }

@@ -18,6 +18,28 @@ _RELICS_PATH = _RESOURCE_DIR / "relics.json"
 _DATA_API = "api.warframestat.us"
 _UPDATE_THRESHOLD = 3600 * 4  # 4 hours
 _BLUEPRINT_ENDINGS = "Systems", "Neuroptics", "Chassis", "Harness", "Wings", "Prime"
+_REFINEMENTS = {
+    "intact": {
+        "common": 0.2533,
+        "uncommon": 0.11,
+        "rare": 0.02,
+    },
+    "exceptional": {
+        "common": 0.2333,
+        "uncommon": 0.13,
+        "rare": 0.04,
+    },
+    "flawless": {
+        "common": 0.2,
+        "uncommon": 0.17,
+        "rare": 0.06,
+    },
+    "radiant": {
+        "common": 0.1667,
+        "uncommon": 0.20,
+        "rare": 0.1,
+    },
+}
 
 items = {}
 whitelist_chars = ""
@@ -109,6 +131,7 @@ def _process_relics(relics: dict[str, dict[str, bool | str]]) -> dict:
                 "name": name,
                 "tier": tier,
                 "drops": {"common": [], "uncommon": [], "rare": []},
+                "price": {},
             }
 
             for n, rarity in enumerate(rarities):
@@ -116,13 +139,26 @@ def _process_relics(relics: dict[str, dict[str, bool | str]]) -> dict:
                     r = f"{rarity}{i}"
                     # Cause raw data ignores forma
                     if r in relic:
-                        drop = relic[r]
+                        drop = _normalise_item_name(relic[r])
                     else:
                         drop = (
                             f"{"2 X " if rarity == "uncommon" else ""}Forma Blueprint"
                         )
                     new_relic["drops"][rarity].append(drop)
-                    items[_normalise_item_name(drop)]["vaulted"] = relic["vaulted"]
+                    items[drop]["vaulted"] = relic["vaulted"]
+
+            for refinement, chances in _REFINEMENTS.items():
+                r_price = {"platinum": 0, "ducats": 0}
+
+                for rarity, drops in new_relic["drops"].items():
+                    for drop in drops:
+                        for currency, value in items[drop]["price"].items():
+                            r_price[currency] += value * chances[rarity]
+
+                for currency in r_price:
+                    r_price[currency] = round(r_price[currency], 2)
+
+                new_relic["price"][refinement] = r_price
 
             new_relics[tier][name] = new_relic
 

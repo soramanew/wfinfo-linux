@@ -1,6 +1,7 @@
 @use "colour" as c;
 @use "rounding";
 @use "anim";
+@use "font";
 
 scrollbar {
     trough {
@@ -27,4 +28,8 @@ scrollbar {
             background-color: transparentize(c.$onSurface, 0.5);
         }
     }
+}
+
+.icon-material {
+    @include font.material;
 }

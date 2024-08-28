@@ -7,6 +7,22 @@ const resourceDir = `${CACHE_DIR}/../resources`;
 const items = JSON.parse(readFile(`${resourceDir}/prices.json`));
 const relics = JSON.parse(readFile(`${resourceDir}/relics.json`));
 
+const ExpandIndicator = () =>
+    Object.assign(
+        Label({
+            className: "icon-material",
+            label: "expand_more",
+        }),
+        {
+            toggled: false,
+            toggle(toggled = null) {
+                if (toggled === null) this.toggled = !this.toggled;
+                else this.toggled = toggled;
+                this.label = this.toggled ? "expand_less" : "expand_more";
+            },
+        }
+    );
+
 const DropWorth = ({ platinum, ducats }) =>
     Box({
         className: "relic-drop-price",
@@ -35,11 +51,13 @@ const RelicWorth = ({ intact, radiant }) => {
     });
 };
 
-const RelicTitle = (relic, dropsRevealer) =>
-    Button({
+const RelicTitle = (relic, dropsRevealer) => {
+    const indicator = ExpandIndicator();
+    return Button({
         child: Box({
             className: "relic-title",
             children: [
+                indicator,
                 Label(relic.name),
                 Label({ hexpand: true, xalign: 0, label: relic.vaulted ? "Vaulted" : "" }),
                 RelicWorth(relic.price),
@@ -51,9 +69,11 @@ const RelicTitle = (relic, dropsRevealer) =>
                     drops.map(d => Drop(d, rarity))
                 );
             dropsRevealer.revealChild = !dropsRevealer.revealChild;
+            indicator.toggle(dropsRevealer.revealChild);
         },
         setup: setupCursorHover,
     });
+};
 
 const Relic = relic => {
     const revealer = Revealer({
@@ -76,15 +96,17 @@ const Tier = ([tier, relics]) => {
         revealChild: false,
         child: Box({ vertical: true }),
     });
+    const indicator = ExpandIndicator();
     return Box({
         vertical: true,
         className: "relic-tier",
         children: [
             Button({
-                child: Label(tier),
+                child: Box({ children: [indicator, Label({ xalign: 0, label: tier })] }),
                 onClicked: () => {
                     if (!revealer.child.children.length) revealer.child.children = Object.values(relics).map(Relic);
                     revealer.revealChild = !revealer.revealChild;
+                    indicator.toggle(revealer.revealChild);
                 },
                 setup: setupCursorHover,
             }),

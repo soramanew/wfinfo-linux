@@ -44,11 +44,6 @@
 }
 
 .relic-title {
-    // Vaulted text
-    & > :nth-child(3) {
-        color: c.$subtext;
-    }
-
     // Spacing
     & * {
         margin-left: 0.68rem;

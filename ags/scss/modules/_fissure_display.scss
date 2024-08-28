@@ -38,8 +38,8 @@
 .reward-sold {
     @include font.main;
     @include font.small;
-}
 
-.reward-sold > :first-child {
-    margin-bottom: 0.068rem;
+    & > :first-child {
+        margin-bottom: 0.068rem;
+    }
 }

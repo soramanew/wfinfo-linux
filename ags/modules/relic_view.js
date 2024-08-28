@@ -59,7 +59,7 @@ const RelicTitle = (relic, dropsRevealer) => {
             children: [
                 indicator,
                 Label(relic.name),
-                Label({ hexpand: true, xalign: 0, label: relic.vaulted ? "Vaulted" : "" }),
+                Label({ hexpand: true, xalign: 0, className: "subtext", label: relic.vaulted ? "Vaulted" : "" }),
                 RelicWorth(relic.price),
             ],
         }),
@@ -118,7 +118,7 @@ const Tier = ([tier, relics]) => {
 export default () =>
     Window({
         name: "wfinfo-relics",
-        visible: true, //false,
+        visible: false,
         layer: "overlay",
         exclusivity: "ignore",
         keymode: "on-demand",

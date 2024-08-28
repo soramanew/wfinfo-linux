@@ -33,3 +33,7 @@ scrollbar {
 .icon-material {
     @include font.material;
 }
+
+.subtext {
+    color: c.$subtext;
+}

@@ -1,7 +1,7 @@
 import Cairo from "cairo";
 import { autodetect, logPath as defaultLogPath, keybind } from "../config.user.js";
 import { CACHE_DIR, debug, fileExists } from "../lib/misc.js";
-const { Window, Box, Label, Icon } = Widget;
+const { Window, Box, Label, Icon, CenterBox } = Widget;
 const { exec, execAsync, HOME, readFile, writeFile, subprocess } = Utils;
 
 const SCREENSHOT_PATH = `${CACHE_DIR}/../screenshot.png`;
@@ -77,6 +77,17 @@ const SoldDisplay = ({ today, yesterday }) =>
         children: [Label(`${today} sold last 24h`), Label(`${today + yesterday} sold last 48h`)],
     });
 
+const VaultedIndicator = vaulted => (vaulted ? Label({ className: "subtext", label: "Vaulted" }) : null);
+
+const OtherIndicators = ({ vaulted }) =>
+    vaulted
+        ? Box({
+              setup: self => {
+                  self.pack_end(VaultedIndicator(vaulted), false, false, 0);
+              },
+          })
+        : null;
+
 const DisplayBase = (i, child) => {
     const { width, spacing } = getDimensions();
     return Box({
@@ -88,14 +99,17 @@ const DisplayBase = (i, child) => {
 const RewardDisplay = (reward, i) =>
     DisplayBase(
         i,
-        Box({
+        CenterBox({
             vertical: true,
-            vpack: "center",
-            children: [
-                Label({ className: "reward-name", label: reward.name, wrap: true, justification: "center" }),
-                PriceDisplay(reward.price),
-                SoldDisplay(reward.sold),
-            ],
+            startWidget: OtherIndicators(reward),
+            centerWidget: Box({
+                vertical: true,
+                children: [
+                    Label({ className: "reward-name", label: reward.name, wrap: true, justification: "center" }),
+                    PriceDisplay(reward.price),
+                    SoldDisplay(reward.sold),
+                ],
+            }),
         })
     );
 

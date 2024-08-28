@@ -137,15 +137,18 @@ def _process_relics(relics: dict[str, dict[str, bool | str]]) -> dict:
             for n, rarity in enumerate(rarities):
                 for i in range(1, n + 2):
                     r = f"{rarity}{i}"
-                    # Cause raw data ignores forma
+                    # Cause raw data missing some stuff
                     if r in relic:
                         drop = _normalise_item_name(relic[r])
+                        # Don't vault forma
+                        if "Forma Blueprint" not in drop:
+                            items[drop]["vaulted"] = relic["vaulted"]
                     else:
+                        # Only missing 2x forma right now
                         drop = (
                             f"{"2 X " if rarity == "uncommon" else ""}Forma Blueprint"
                         )
                     new_relic["drops"][rarity].append(drop)
-                    items[drop]["vaulted"] = relic["vaulted"]
 
             for refinement, chances in _REFINEMENTS.items():
                 r_price = {"platinum": 0, "ducats": 0}
@@ -190,10 +193,12 @@ def _process_prices(
         "Forma Blueprint": {
             "price": {"platinum": 11.67, "ducats": 0},
             "sold": {"today": 0, "yesterday": 0},
+            "vaulted": False,
         },
         "2 X Forma Blueprint": {
             "price": {"platinum": 23.33, "ducats": 0},
             "sold": {"today": 0, "yesterday": 0},
+            "vaulted": False,
         },
     }
 

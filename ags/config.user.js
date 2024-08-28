@@ -1,8 +1,9 @@
 // Keybinds config (mod,key Hyprland style), set to empty or delete to disable auto creation
+// For multiple modifiers, use + to separate them
 export const keybinds = {
     fissure: ",F2", // Trigger manual fissure reward detection
     gui: {
-        open: ",F3", // Open gui overlay
+        toggle: ",F3", // Toggle gui overlay
     },
 };
 

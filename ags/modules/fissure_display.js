@@ -1,6 +1,6 @@
 import Cairo from "cairo";
-import { autodetect, logPath as defaultLogPath, keybinds } from "../config.user.js";
-import { CACHE_DIR, createKeybind, debug, fileExists } from "../lib/misc.js";
+import { autodetect, logPath as defaultLogPath } from "../config.user.js";
+import { CACHE_DIR, debug, fileExists } from "../lib/misc.js";
 const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, HOME, readFile, writeFile, subprocess } = Utils;
 
@@ -166,8 +166,6 @@ if (autodetect) {
         });
     } else console.log("[WARNING] Unable to find Warframe's EE.log. Auto rewards detection will not be available.");
 }
-
-if (keybinds.fissure) createKeybind(keybinds.fissure, `${App.configDir}/../trigger.sh`);
 
 const RewardsDisplay = () =>
     Box().hook(rewards, self => {

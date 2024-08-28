@@ -1,0 +1,57 @@
+#!/bin/fish
+
+cd (dirname (realpath (status filename))) || exit
+
+set script_name (basename (status filename))
+count $argv >/dev/null || set no_args
+
+argparse -n $script_name -X 0 -x 'h,t,g' \
+    'h/help' \
+    't/trigger' \
+    'g/toggle-gui' \
+    -- $argv
+or exit
+
+if set -q _flag_h
+    echo 'Usage:'
+    echo '    '$script_name
+    echo '    '$script_name' [ -h | --help ]'
+    echo '    '$script_name' [ -t | --trigger ]'
+    echo '    '$script_name' [ -g | --toggle-gui ]'
+    echo
+    echo 'Options:'
+    echo '    -h, --help            Print this help message and exit'
+    echo '    -t, --trigger         Trigger manual fissure rewards detection'
+    echo '    -g, --toggle-gui      Toggle the GUI layers'
+
+    exit
+end
+
+# Start if no args
+if set -q no_args
+    if ! test -d .venv
+        python -m venv .venv
+        . .venv/bin/activate.fish
+        pip install -r requirements.txt
+    end
+
+    ags -b wfinfo -c ./ags/config.js
+    exit
+end
+
+# Exit if not running
+dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames \
+    | grep 'com.github.Aylur.ags.wfinfo' >/dev/null || exit
+
+# Args just call AGS functions
+function run -a fn
+    ags -b wfinfo -r "$fn()" >/dev/null
+end
+
+if set -q _flag_t
+    run trigger
+end
+
+if set -q _flag_g
+    run toggleGui
+end

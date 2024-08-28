@@ -21,7 +21,10 @@ This is a limited remake of [wfinfo](https://wfinfo.warframestat.us) in Python a
 -   `grim` - for screenshots
 -   `wlr-randr` - for getting active monitor for screenshots
 -   `wmctrl` - for WM/DE detection
--   `fish` - optional, for `.sh` scripts
+-   `fish` - for `wfinfo` script
+
+> [!TIP]
+> If you _really_ don't want to use `fish`, you can just translate it to your preferred shell.
 
 ## Installation
 
@@ -35,16 +38,13 @@ yay -S --needed python tesseract-data-eng tesseract aylurs-gtk-shell-git dart-sa
 
 ## Usage
 
-> [!TIP]
-> Scripts require the `fish` shell. If not using `fish`, just look into the files and translate them to your shell.
-
-Start the program via the `run.sh` script in the base directory. The program will monitor Warframe's `EE.log` file
+Start the program via the `wfinfo` script in the base directory. The program will monitor Warframe's `EE.log` file
 and trigger when it detects a reward screen. As Warframe stores its logs in a buffer and only outputs to the log file
 when the buffer is full, the auto detection may be inconsistent.
 
-The reward display can be manually triggered while running via the `trigger.sh` script in the base directory. If on
-Hyprland, the program will automatically create a shortcut for the trigger script (`F2` by default) on start. This WILL
-remove any prior binds for that key. Otherwise, just create a keybind manually depending on your DE.
+The reward display can be manually triggered while running via `wfinfo -t`. If on Hyprland, the program will
+automatically create a shortcut for the trigger script (`F2` by default) on start. This WILL remove any prior binds
+for that key. Otherwise, just create a keybind manually depending on your DE.
 
 ## Configuration
 

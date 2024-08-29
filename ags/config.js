@@ -37,7 +37,11 @@ GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, 2, App.quit);
 // Handle ags -q and App.quit()
 App.connect("shutdown", deleteKeybinds);
 
-const connectWindows = () => App.connect("window-toggled", (_, name, visible) => (windowsOpen[name] = visible));
+const ignoredWindows = ["wfinfo-fissure"];
+const connectWindows = () =>
+    App.connect("window-toggled", (_, name, visible) => {
+        if (!ignoredWindows.includes(name)) windowsOpen[name] = visible;
+    });
 let opened = false;
 let id = connectWindows();
 // Proxy to keep order of updating

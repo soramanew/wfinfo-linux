@@ -1,6 +1,7 @@
 import { setupCursorHover } from "../lib/cursor_hover.js";
 import { CACHE_DIR } from "../lib/misc.js";
-const { Window, Box, Label, Icon, Button, Revealer, Scrollable } = Widget;
+import OverlayWindow from "../lib/overlay_window.js";
+const { Box, Label, Icon, Button, Revealer, Scrollable } = Widget;
 const { readFile } = Utils;
 
 const resourceDir = `${CACHE_DIR}/../resources`;
@@ -116,50 +117,20 @@ const Tier = ([tier, relics]) => {
 };
 
 export default () =>
-    Window({
+    OverlayWindow({
         name: "wfinfo-relics",
-        visible: false,
-        layer: "overlay",
-        exclusivity: "ignore",
-        keymode: "on-demand",
         child: Box({
             className: "relic-view",
             child: Scrollable({
                 hscroll: "never",
                 vscroll: "automatic",
-                child: Box({
-                    vertical: true,
-                    children: Object.entries(relics).map(Tier),
-                }),
-                setup: self =>
-                    Utils.timeout(1, () => {
-                        const height =
-                            self.window.get_display().get_monitor_at_window(self.window).get_geometry().height * 0.7;
-                        self.set_size_request((height / 3) * 4, height);
-                    }),
+                child: Box({ vertical: true, children: Object.entries(relics).map(Tier) }),
             }),
         }),
-        setup: self => {
-            const id = App.connect("window-toggled", (_, name, visible) => {
-                if (visible && name === self.name) {
-                    // Change anchor so margins work
-                    self.anchor = ["top", "left"];
-
-                    // Set margins to center
-                    const { width, height } = self.window
-                        .get_display()
-                        .get_monitor_at_window(self.window)
-                        .get_geometry();
-                    self.margins = [
-                        (height - self.get_preferred_height()[1]) / 2,
-                        0,
-                        0,
-                        (width - self.get_preferred_width()[1]) / 2,
-                    ];
-
-                    // Disconnect so run once only
-                    App.disconnect(id);
-                }
-            });
-        },
+        setup: self =>
+            Utils.timeout(1, () => {
+                const height = self.window.get_display().get_monitor_at_window(self.window).get_geometry().height * 0.7;
+                self.attribute.width = (height / 3) * 4;
+                self.attribute.height = height;
+            }),
     });

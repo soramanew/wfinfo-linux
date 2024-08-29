@@ -103,7 +103,7 @@ const Tier = ([tier, relics]) => {
         className: "relic-tier",
         children: [
             Button({
-                child: Box({ children: [indicator, Label({ xalign: 0, label: tier })] }),
+                child: Box({ children: [indicator, Label({ hexpand: true, xalign: 0, label: tier })] }),
                 onClicked: () => {
                     if (!revealer.child.children.length) revealer.child.children = Object.values(relics).map(Relic);
                     revealer.revealChild = !revealer.revealChild;

@@ -5,39 +5,47 @@ export default ({ setup = () => {}, ...rest }) =>
         layer: "overlay",
         exclusivity: "ignore",
         keymode: "on-demand",
-        attribute: { x: 0, y: 0, width: 0, height: 0 },
+        attribute: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            update: self => {
+                const { width, height } = self.window.get_display().get_monitor_at_window(self.window).get_geometry();
+                const { x, y, width: w, height: h } = self.attribute;
+                // Top, right, bottom, left
+                self.margins = [y, width - w - x, height - h - y, x];
+            },
+        },
         setup: self => {
             let first = true;
             App.connect("window-toggled", (_, name, visible) => {
                 if (!visible || name !== self.name) return;
 
-                // Set margins
-                const { width, height } = self.window.get_display().get_monitor_at_window(self.window).get_geometry();
-                let { x, y, width: w, height: h } = self.attribute;
-
                 if (first) {
                     // Change anchor so margins work
                     self.anchor = ["top", "right", "bottom", "left"];
 
-                    // Center
-                    if (w <= 0) w = self.get_preferred_width()[1];
-                    if (h <= 0) h = self.get_preferred_height()[1];
-                    x = (width - w) / 2;
-                    y = (height - h) / 2;
-                    print(y);
+                    // Size of current monitor
+                    const { width, height } = self.window
+                        .get_display()
+                        .get_monitor_at_window(self.window)
+                        .get_geometry();
 
-                    // Set attribute props to retain dims
-                    self.attribute.x = x;
-                    self.attribute.y = y;
-                    self.attribute.width = w;
-                    self.attribute.height = h;
+                    // Set if unset or invalid
+                    if (self.attribute.width <= 0) self.attribute.width = self.get_preferred_width()[1];
+                    if (self.attribute.height <= 0) self.attribute.height = self.get_preferred_height()[1];
+
+                    // Center
+                    self.attribute.x = (width - self.attribute.width) / 2;
+                    self.attribute.y = (height - self.attribute.height) / 2;
 
                     // Only on first open
                     first = false;
                 }
 
-                // Top, right, bottom, left
-                self.margins = [y, width - w - x, height - h - y, x];
+                // Update
+                self.attribute.update(self);
             });
 
             // Extra setup

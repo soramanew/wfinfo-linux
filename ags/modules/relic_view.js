@@ -119,13 +119,13 @@ const Tier = ([tier, relics]) => {
 export default () =>
     OverlayWindow({
         name: "wfinfo-relics",
-        child: Box({
-            className: "relic-view",
-            child: Scrollable({
-                hscroll: "never",
-                vscroll: "automatic",
-                child: Box({ vertical: true, children: Object.entries(relics).map(Tier) }),
-            }),
+        title: "Relic View",
+        icon: "relic",
+        child: Scrollable({
+            vexpand: true,
+            hscroll: "never",
+            vscroll: "automatic",
+            child: Box({ vertical: true, children: Object.entries(relics).map(Tier) }),
         }),
         setup: self =>
             Utils.timeout(1, () => {

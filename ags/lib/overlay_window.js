@@ -1,11 +1,69 @@
-export default ({ setup = () => {}, ...rest }) =>
-    Widget.Window({
+import Gtk from "gi://Gtk";
+import { setupCursorHover, setupCursorHoverMove } from "./cursor_hover.js";
+const { Window, Box, Label, Button, Icon } = Widget;
+
+const setupDrag = (self, name, dimX, dimY) => {
+    setupCursorHoverMove(self);
+
+    const gesture = Gtk.GestureDrag.new(self);
+    self.hook(
+        gesture,
+        () => {
+            const [, xOff, yOff] = gesture.get_offset();
+            const window = App.getWindow(name);
+            window.attribute[dimX] += xOff;
+            window.attribute[dimY] += yOff;
+            window.attribute.update(window);
+        },
+        "drag-end"
+    );
+};
+
+const HeaderButton = ({ name, icon, ...rest }) =>
+    Button({
         ...rest,
+        hpack: "center",
+        vpack: "center",
+        className: "overlay-window-button",
+        child: Label(icon),
+    });
+
+const Header = (name, title, icon) =>
+    Box({
+        className: "overlay-window-header",
+        children: [
+            Button({
+                hexpand: true,
+                child: Box({ children: [icon ? Icon(`${icon}-symbolic`) : null, Label({ xalign: 0, label: title })] }),
+                setup: self => setupDrag(self, name, "x", "y"),
+            }),
+            HeaderButton({ icon: "open_in_full", setup: self => setupDrag(self, name, "width", "height") }),
+            HeaderButton({
+                icon: "close",
+                onClicked: () => App.closeWindow(name),
+                setup: setupCursorHover,
+            }),
+        ],
+    });
+
+const Content = (name, title, icon, child, header) =>
+    Box({
+        vertical: true,
+        className: "overlay-window",
+        children: [header ? Header(name, title, icon) : null, child],
+    });
+
+export default ({ name, child, icon = "", header = true, title = name, setup = () => {}, ...rest }) =>
+    Window({
+        ...rest,
+        name,
+        child: Content(name, title, icon, child, header),
         visible: false,
         layer: "overlay",
         exclusivity: "ignore",
         keymode: "on-demand",
         attribute: {
+            icon,
             x: 0,
             y: 0,
             width: 0,

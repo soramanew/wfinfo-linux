@@ -1,0 +1,55 @@
+@use "../lib/colour" as c;
+@use "../lib/rounding";
+@use "../lib/font";
+@use "../lib/anim";
+@use "../lib/border";
+
+.overlay {
+    background-color: change-color(c.$background, $alpha: 0.5);
+}
+
+.overlay-window {
+    @include rounding.normal;
+    @include border.elevation;
+
+    background-color: c.$background;
+    color: c.$onBackground;
+    padding: 0.68rem 1.02rem;
+}
+
+.overlay-window-header {
+    @include font.title;
+    @include font.larger;
+
+    color: c.$onBackground;
+    margin-bottom: 0.68rem;
+
+    // Layout, [ ] = margin, type() = group, spaces = hexpand
+    // [ ]button(box(icon[ ]title       [ ]))[ ]button(icon)[ ]button(icon)
+    & > :first-child > * > * {
+        margin-right: 0.34rem;
+    }
+
+    & > * {
+        margin-left: 0.34rem;
+    }
+}
+
+.overlay-window-button {
+    @include rounding.full;
+    @include font.material;
+    @include anim.element-decel;
+
+    background-color: transparent;
+    min-width: 2.448rem;
+    min-height: 2.448rem;
+
+    &:hover,
+    &:focus {
+        background-color: c.$layer0Hover;
+    }
+
+    &:active {
+        background-color: c.$layer0Active;
+    }
+}

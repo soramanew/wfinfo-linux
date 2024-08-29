@@ -22,3 +22,6 @@ export const setupCursorHoverGrab = button => setupCursor(button, "grab");
 
 // "?" mark cursor on hover
 export const setupCursorHoverInfo = button => setupCursor(button, "help");
+
+// 4 arrow cursor on hover
+export const setupCursorHoverMove = button => setupCursor(button, "move");

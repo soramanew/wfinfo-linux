@@ -1,15 +1,6 @@
 @use "../lib/colour" as c;
 @use "../lib/rounding";
 @use "../lib/font";
-@use "../lib/border";
-
-.relic-view {
-    @include rounding.normal;
-    @include border.elevation;
-
-    background-color: c.$background;
-    padding: 0.68rem 1.02rem;
-}
 
 .relic-tier {
     @include rounding.normal;

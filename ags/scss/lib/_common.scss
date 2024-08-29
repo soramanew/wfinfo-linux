@@ -46,7 +46,3 @@ scrollbar {
 .subtext {
     color: c.$subtext;
 }
-
-.overlay {
-    background-color: change-color(c.$background, $alpha: 0.5);
-}

@@ -6,7 +6,7 @@
 
 .toolbar {
     @include rounding.normal;
-    @include border.elevation;
+    @include border.elevation(true);
 
     background-color: c.$background;
     color: c.$onBackground;

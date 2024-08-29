@@ -1,11 +1,20 @@
 import { setupCursorHover } from "../lib/cursor_hover.js";
-const { Window, Box, Icon, Button } = Widget;
+const { Window, Box, Icon, Button, Label } = Widget;
+
+const OverlayButton = () =>
+    Button({
+        className: "toolbar-button toolbar-button-active",
+        tooltipText: "Close overlay",
+        child: Label({ className: "icon-material", label: "overview_key" }),
+        onClicked: () => toggleGui(),
+        setup: setupCursorHover,
+    });
 
 const WindowButton = (window, icon, tooltip) =>
     Button({
         className: "toolbar-button",
         tooltipText: tooltip,
-        child: Icon(icon),
+        child: Icon(`${icon}-symbolic`),
         onClicked: self => {
             App.toggleWindow(window);
             self.toggleClassName("toolbar-button-active", App.getWindow(window).visible);
@@ -18,7 +27,7 @@ const Toolbar = () =>
         hpack: "center",
         vpack: "end",
         className: "toolbar",
-        children: [WindowButton("wfinfo-relics", "relic", "Relic View")],
+        children: [OverlayButton(), WindowButton("wfinfo-relics", "relic", "Relic View")],
     });
 
 export default () =>
@@ -27,7 +36,7 @@ export default () =>
         visible: false,
         layer: "overlay",
         exclusivity: "ignore",
-        keymode: "exclusive",
+        keymode: "on-demand",
         anchor: ["left", "top", "right", "bottom"],
         child: Toolbar(),
     });

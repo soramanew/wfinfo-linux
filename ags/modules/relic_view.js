@@ -139,4 +139,27 @@ export default () =>
                     }),
             }),
         }),
+        setup: self => {
+            const id = App.connect("window-toggled", (_, name, visible) => {
+                if (visible && name === self.name) {
+                    // Change anchor so margins work
+                    self.anchor = ["top", "left"];
+
+                    // Set margins to center
+                    const { width, height } = self.window
+                        .get_display()
+                        .get_monitor_at_window(self.window)
+                        .get_geometry();
+                    self.margins = [
+                        (height - self.get_preferred_height()[1]) / 2,
+                        0,
+                        0,
+                        (width - self.get_preferred_width()[1]) / 2,
+                    ];
+
+                    // Disconnect so run once only
+                    App.disconnect(id);
+                }
+            });
+        },
     });

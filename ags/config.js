@@ -25,6 +25,7 @@ App.config({
     windows: [FissureDisplay(), Overlay(), Toolbar(), RelicView()],
 });
 
+//////////////// Keybind stuff
 const binPath = `${App.configDir}/../wfinfo`;
 createKeybind(keybinds.fissure, `${binPath} -t`);
 createKeybind(keybinds.gui?.toggle, `${binPath} -g`);
@@ -38,6 +39,7 @@ GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, 2, App.quit);
 // Handle ags -q and App.quit()
 App.connect("shutdown", deleteKeybinds);
 
+//////////////// Window toggle stuff
 const ignoredWindows = ["wfinfo-fissure"];
 const connectWindows = () =>
     App.connect("window-toggled", (_, name, visible) => {

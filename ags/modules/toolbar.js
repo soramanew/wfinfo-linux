@@ -1,5 +1,5 @@
 import { setupCursorHover } from "../lib/cursor_hover.js";
-const { Window, Box, Label, Icon, Button, Overlay } = Widget;
+const { Window, Box, Icon, Button } = Widget;
 
 const WindowButton = (window, icon, tooltip) =>
     Button({
@@ -21,8 +21,6 @@ const Toolbar = () =>
         children: [WindowButton("wfinfo-relics", "relic", "Relic View")],
     });
 
-const Background = () => Box({ expand: true, className: "overlay" });
-
 export default () =>
     Window({
         name: "wfinfo-toolbar",
@@ -31,8 +29,5 @@ export default () =>
         exclusivity: "ignore",
         keymode: "exclusive",
         anchor: ["left", "top", "right", "bottom"],
-        child: Overlay({
-            child: Background(),
-            overlays: [Toolbar()],
-        }),
+        child: Toolbar(),
     });

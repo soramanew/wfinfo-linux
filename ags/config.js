@@ -4,6 +4,7 @@ import { keybinds } from "./config.user.js";
 import { createKeybind, deleteKeybind } from "./lib/keybind.js";
 import { CACHE_DIR } from "./lib/misc.js";
 import FissureDisplay from "./modules/fissure_display.js";
+import Overlay from "./modules/overlay.js";
 import RelicView from "./modules/relic_view.js";
 import Toolbar from "./modules/toolbar.js";
 const { execAsync, ensureDirectory } = Utils;
@@ -21,7 +22,7 @@ reloadCss();
 App.addIcons(`${App.configDir}/assets/icons`);
 App.config({
     stackTraceOnError: true,
-    windows: [FissureDisplay(), Toolbar(), RelicView()],
+    windows: [FissureDisplay(), Overlay(), Toolbar(), RelicView()],
 });
 
 const binPath = `${App.configDir}/../wfinfo`;
@@ -58,6 +59,7 @@ const windowsOpen = new Proxy(
         },
     }))(new Set())
 );
+windowsOpen["wfinfo-overlay"] = true;
 windowsOpen["wfinfo-toolbar"] = true;
 
 globalThis.toggleGui = () => {

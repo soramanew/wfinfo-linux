@@ -5,8 +5,9 @@ cd (dirname (realpath (status filename))) || exit
 set script_name (basename (status filename))
 count $argv >/dev/null || set no_args
 
-argparse -n $script_name -X 0 -x 'h,t,g,reload-css' \
+argparse -n $script_name -X 0 -x 'h,q,t,g,reload-css' \
     'h/help' \
+    'q/quit' \
     't/trigger' \
     'g/toggle-gui' \
     'reload-css' \
@@ -16,6 +17,7 @@ or exit
 if set -q _flag_h
     echo 'Usage:'
     echo '    '$script_name
+    echo '    '$script_name' [ -q | --quit ]'
     echo '    '$script_name' [ -h | --help ]'
     echo '    '$script_name' [ -t | --trigger ]'
     echo '    '$script_name' [ -g | --toggle-gui ]'
@@ -23,9 +25,10 @@ if set -q _flag_h
     echo
     echo 'Options:'
     echo '    -h, --help            Print this help message and exit'
+    echo '    -q, --quit            Quit the application'
     echo '    -t, --trigger         Trigger manual fissure rewards detection'
     echo '    -g, --toggle-gui      Toggle the GUI layers'
-    echo '        --reload-css      Reload GUI styles'
+    echo '    --reload-css          Reload GUI styles'
 
     exit
 end
@@ -44,7 +47,12 @@ end
 
 # Exit if not running
 dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames \
-    | grep 'com.github.Aylur.ags.wfinfo' >/dev/null || exit
+    | grep 'com.github.Aylur.ags.wfinfo' >/dev/null || exit 0
+
+# Quit arg
+if set -q _flag_q
+    ags -b wfinfo -q
+end
 
 # Args just call AGS functions
 function run -a fn

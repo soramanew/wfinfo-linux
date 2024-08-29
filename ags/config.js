@@ -1,5 +1,8 @@
+import GLib from "gi://GLib";
+import GLibUnix from "gi://GLibUnix";
 import { keybinds } from "./config.user.js";
-import { CACHE_DIR, createKeybind } from "./lib/misc.js";
+import { createKeybind, deleteKeybind } from "./lib/keybind.js";
+import { CACHE_DIR } from "./lib/misc.js";
 import FissureDisplay from "./modules/fissure_display.js";
 import RelicView from "./modules/relic_view.js";
 import Toolbar from "./modules/toolbar.js";
@@ -22,8 +25,17 @@ App.config({
 });
 
 const binPath = `${App.configDir}/../wfinfo`;
-if (keybinds.fissure) createKeybind(keybinds.fissure, `${binPath} -t`);
-if (keybinds.gui?.toggle) createKeybind(keybinds.gui.toggle, `${binPath} -g`);
+createKeybind(keybinds.fissure, `${binPath} -t`);
+createKeybind(keybinds.gui?.toggle, `${binPath} -g`);
+
+const deleteKeybinds = () => {
+    deleteKeybind(keybinds.fissure);
+    deleteKeybind(keybinds.gui?.toggle);
+};
+// Handle SIGINT
+GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, 2, App.quit);
+// Handle ags -q and App.quit()
+App.connect("shutdown", deleteKeybinds);
 
 const connectWindows = () => App.connect("window-toggled", (_, name, visible) => (windowsOpen[name] = visible));
 let opened = false;

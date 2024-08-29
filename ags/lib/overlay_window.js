@@ -2,7 +2,7 @@ import Gtk from "gi://Gtk";
 import { setupCursorHover, setupCursorHoverMove } from "./cursor_hover.js";
 const { Window, Box, Label, Button, Icon } = Widget;
 
-const setupDrag = (self, name, dimX, dimY) => {
+const setupDrag = (self, name, dimX, dimY, cap = null) => {
     setupCursorHoverMove(self);
 
     const gesture = Gtk.GestureDrag.new(self);
@@ -13,6 +13,10 @@ const setupDrag = (self, name, dimX, dimY) => {
             const window = App.getWindow(name);
             window.attribute[dimX] += xOff;
             window.attribute[dimY] += yOff;
+            if (cap !== null) {
+                if (window.attribute[dimX] < cap) window.attribute[dimX] = cap;
+                if (window.attribute[dimY] < cap) window.attribute[dimY] = cap;
+            }
             window.attribute.update(window);
         },
         "drag-end"
@@ -37,7 +41,7 @@ const Header = (name, title, icon) =>
                 child: Box({ children: [icon ? Icon(`${icon}-symbolic`) : null, Label({ xalign: 0, label: title })] }),
                 setup: self => setupDrag(self, name, "x", "y"),
             }),
-            HeaderButton({ icon: "open_in_full", setup: self => setupDrag(self, name, "width", "height") }),
+            HeaderButton({ icon: "open_in_full", setup: self => setupDrag(self, name, "width", "height", 1) }),
             HeaderButton({
                 icon: "close",
                 onClicked: () => App.closeWindow(name),

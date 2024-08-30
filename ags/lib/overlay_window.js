@@ -67,7 +67,6 @@ export default ({ name, child, icon = "", header = true, title = name, setup = (
         exclusivity: "ignore",
         keymode: "on-demand",
         attribute: {
-            icon,
             x: 0,
             y: 0,
             width: 0,

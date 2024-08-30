@@ -3,6 +3,17 @@
 @use "anim";
 @use "font";
 
+* {
+    selection {
+        background-color: c.$secondary;
+        color: c.$onSecondary;
+    }
+
+    & {
+        caret-color: c.$onLayer2;
+    }
+}
+
 tooltip {
     @include rounding.normal;
     @include font.reading;

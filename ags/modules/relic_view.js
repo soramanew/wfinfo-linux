@@ -1,7 +1,7 @@
 import { setupCursorHover } from "../lib/cursor_hover.js";
 import { CACHE_DIR } from "../lib/misc.js";
 import OverlayWindow from "../lib/overlay_window.js";
-const { Box, Label, Icon, Button, Revealer, Scrollable } = Widget;
+const { Box, Label, Icon, Button, Revealer, Scrollable, Entry } = Widget;
 const { readFile } = Utils;
 
 const resourceDir = `${CACHE_DIR}/../resources`;
@@ -35,6 +35,7 @@ const DropWorth = ({ platinum, ducats }) =>
 
 const Drop = (drop, rarity) =>
     Box({
+        attribute: items[drop],
         className: `relic-drop relic-drop-${rarity}`,
         children: [Label({ hexpand: true, xalign: 0, label: drop }), DropWorth(items[drop].price)],
     });
@@ -84,49 +85,101 @@ const Relic = relic => {
         child: Box({ vertical: true }),
     });
     return Box({
+        attribute: relic,
         vertical: true,
         className: "relic",
         children: [RelicTitle(relic, revealer), revealer],
     });
 };
 
-const Tier = ([tier, relics]) => {
-    const revealer = Revealer({
-        transition: "slide_down",
-        transitionDuration: 300,
-        revealChild: false,
-        child: Box({ vertical: true }),
+export default () => {
+    const updateFilter = (tier, matcher = new RegExp(searchEntry.text, "gi")) => {
+        let visible = false;
+
+        for (const [i, relic] of Object.values(tier.attribute).entries()) {
+            let vis = relic.name.match(matcher) !== null;
+
+            if (!vis)
+                for (const rarity of Object.values(relic.drops))
+                    for (const drop of rarity) if (drop.match(matcher) !== null) vis = true;
+
+            if (vis) visible = true;
+
+            const relicWidget = tier.children[1].child.children[i];
+            if (relicWidget && relicWidget.visible !== vis) relicWidget.visible = vis;
+        }
+
+        if (tier.visible !== visible) tier.visible = visible;
+    };
+
+    const Tier = ([tier, relics]) => {
+        const revealer = Revealer({
+            transition: "slide_down",
+            transitionDuration: 300,
+            revealChild: false,
+            child: Box({ vertical: true }),
+        });
+        const indicator = ExpandIndicator();
+        const self = Box({
+            attribute: relics,
+            vertical: true,
+            className: "relic-tier",
+            children: [
+                Button({
+                    child: Box({ children: [indicator, Label({ hexpand: true, xalign: 0, label: tier })] }),
+                    onClicked: () => {
+                        if (!revealer.child.children.length) {
+                            revealer.child.children = Object.values(relics).map(Relic);
+                            updateFilter(self);
+                        }
+                        revealer.revealChild = !revealer.revealChild;
+                        indicator.toggle(revealer.revealChild);
+                    },
+                    setup: setupCursorHover,
+                }),
+                revealer,
+            ],
+        });
+        return self;
+    };
+
+    const list = Box({ vertical: true, children: Object.entries(relics).map(Tier) });
+
+    const searchEntry = Entry({
+        hexpand: true,
+        placeholderText: "Filter by name/drops",
+        onChange: ({ text }) => {
+            const matcher = new RegExp(text, "gi");
+            for (const tier of list.children) updateFilter(tier, matcher);
+        },
     });
-    const indicator = ExpandIndicator();
-    return Box({
+
+    const content = Box({
         vertical: true,
-        className: "relic-tier",
         children: [
-            Button({
-                child: Box({ children: [indicator, Label({ hexpand: true, xalign: 0, label: tier })] }),
-                onClicked: () => {
-                    if (!revealer.child.children.length) revealer.child.children = Object.values(relics).map(Relic);
-                    revealer.revealChild = !revealer.revealChild;
-                    indicator.toggle(revealer.revealChild);
-                },
-                setup: setupCursorHover,
+            Box({
+                className: "relic-view-header",
+                children: [
+                    Box({
+                        className: "relic-view-search",
+                        children: [Label({ className: "icon-material", label: "search" }), searchEntry],
+                    }),
+                ],
             }),
-            revealer,
+            Scrollable({
+                vexpand: true,
+                hscroll: "never",
+                vscroll: "automatic",
+                child: list,
+            }),
         ],
     });
-};
 
-export default () =>
-    OverlayWindow({
+    return OverlayWindow({
         name: "wfinfo-relics",
         title: "Relic View",
         icon: "relic",
-        child: Scrollable({
-            vexpand: true,
-            hscroll: "never",
-            vscroll: "automatic",
-            child: Box({ vertical: true, children: Object.entries(relics).map(Tier) }),
-        }),
+        child: content,
         setup: self =>
             Utils.timeout(1, () => {
                 const height = self.window.get_display().get_monitor_at_window(self.window).get_geometry().height * 0.7;
@@ -134,3 +187,4 @@ export default () =>
                 self.attribute.height = height;
             }),
     });
+};

@@ -2,6 +2,31 @@
 @use "../lib/rounding";
 @use "../lib/font";
 
+.relic-view-header {
+    @include font.small;
+    @include font.main;
+
+    margin-bottom: 0.68rem;
+}
+
+.relic-view-search {
+    @include rounding.small;
+
+    background-color: c.$layer1;
+    color: c.$onLayer1;
+    padding: 0.34rem 0.68rem;
+
+    & > * {
+        margin-left: 0.34rem;
+    }
+
+    & > :first-child {
+        @include font.large;
+
+        margin-left: 0;
+    }
+}
+
 .relic-tier {
     @include rounding.normal;
     @include font.title;

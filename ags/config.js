@@ -2,13 +2,14 @@ import GLib from "gi://GLib";
 import GLibUnix from "gi://GLibUnix";
 import { keybinds } from "./config.user.js";
 import { createKeybind, deleteKeybind } from "./lib/keybind.js";
-import { CACHE_DIR } from "./lib/misc.js";
+import { BIN_PATH, CACHE_DIR } from "./lib/misc.js";
 import FissureDisplay from "./modules/fissure_display.js";
 import Overlay from "./modules/overlay.js";
 import RelicView from "./modules/relic_view.js";
 import Toolbar from "./modules/toolbar.js";
 const { execAsync, ensureDirectory } = Utils;
 
+// Compile SCSS and apply
 ensureDirectory(CACHE_DIR);
 globalThis.reloadCss = () =>
     execAsync(`sass ${App.configDir}/scss/main.scss ${CACHE_DIR}/style.css`)
@@ -19,6 +20,13 @@ globalThis.reloadCss = () =>
         .catch(print);
 reloadCss();
 
+// Update databases on startup
+execAsync(`${BIN_PATH} --update-dbs`)
+    // Ugh there are ANSI escape codes in front of the output
+    .then(out => console.log(`[INFO] ${out.replace(/.*\u001b\\/, "")}`))
+    .catch(print);
+
+// Add icons then config cause if not windows throw errors for not able to find icon
 App.addIcons(`${App.configDir}/assets/icons`);
 App.config({
     stackTraceOnError: true,
@@ -26,9 +34,8 @@ App.config({
 });
 
 //////////////// Keybind stuff
-const binPath = `${App.configDir}/../wfinfo`;
-createKeybind(keybinds.fissure, `${binPath} -t`);
-createKeybind(keybinds.gui?.toggle, `${binPath} -g`);
+createKeybind(keybinds.fissure, `${BIN_PATH} -t`);
+createKeybind(keybinds.gui?.toggle, `${BIN_PATH} -g`);
 
 const deleteKeybinds = () => {
     deleteKeybind(keybinds.fissure);

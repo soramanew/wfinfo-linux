@@ -5,12 +5,13 @@ cd (dirname (realpath (status filename))) || exit
 set script_name (basename (status filename))
 count $argv >/dev/null || set no_args
 
-argparse -n $script_name -X 0 -x 'h,q,t,g,reload-css' \
+argparse -n $script_name -X 0 -x 'h,q,t,g,reload-css,update-dbs' \
     'h/help' \
     'q/quit' \
     't/trigger' \
     'g/toggle-gui' \
     'reload-css' \
+    'update-dbs' \
     -- $argv
 or exit
 
@@ -22,6 +23,7 @@ if set -q _flag_h
     echo '    '$script_name' [ -t | --trigger ]'
     echo '    '$script_name' [ -g | --toggle-gui ]'
     echo '    '$script_name' [ --reload-css ]'
+    echo '    '$script_name' [ --update-dbs ]'
     echo
     echo 'Options:'
     echo '    -h, --help            Print this help message and exit'
@@ -29,6 +31,7 @@ if set -q _flag_h
     echo '    -t, --trigger         Trigger manual fissure rewards detection'
     echo '    -g, --toggle-gui      Toggle the GUI layers'
     echo '    --reload-css          Reload GUI styles'
+    echo '    --update-dbs          Update relic, item and price databases'
 
     exit
 end
@@ -69,4 +72,8 @@ end
 
 if set -q _flag_reload_css
     run reloadCss
+end
+
+if set -q _flag_update_dbs
+    .venv/bin/python src/database.py
 end

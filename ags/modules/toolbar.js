@@ -1,10 +1,18 @@
 import { setupCursorHover } from "../lib/cursor_hover.js";
-const { Window, Box, Icon, Button, Label } = Widget;
+import OverlayWindow, { setupDrag } from "../lib/overlay_window.js";
+const { Box, Icon, Button, Label } = Widget;
+
+const DragArea = () =>
+    Button({
+        className: "toolbar-drag-area",
+        child: Label({ className: "icon-material", label: "drag_indicator" }),
+        setup: self => setupDrag(self, "wfinfo-toolbar", "x", "y"),
+    });
 
 const OverlayButton = () =>
     Button({
         className: "toolbar-button toolbar-button-active",
-        tooltipText: "Close overlay",
+        tooltipText: "Overlay",
         child: Label({ className: "icon-material", label: "overview_key" }),
         onClicked: () => toggleGui(),
         setup: setupCursorHover,
@@ -24,19 +32,21 @@ const WindowButton = (window, icon, tooltip) =>
 
 const Toolbar = () =>
     Box({
-        hpack: "center",
-        vpack: "end",
         className: "toolbar",
-        children: [OverlayButton(), WindowButton("wfinfo-relics", "relic", "Relic View")],
+        children: [
+            DragArea(),
+            Box({
+                homogeneous: true,
+                children: [OverlayButton(), WindowButton("wfinfo-relics", "relic", "Relic View")],
+            }),
+        ],
     });
 
 export default () =>
-    Window({
+    OverlayWindow({
         name: "wfinfo-toolbar",
-        visible: false,
-        layer: "overlay",
-        exclusivity: "ignore",
-        keymode: "on-demand",
-        anchor: ["left", "top", "right", "bottom"],
+        className: "toolbar-window",
+        header: false,
+        y: -20,
         child: Toolbar(),
     });

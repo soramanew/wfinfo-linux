@@ -1,11 +1,7 @@
 @use "colour" as c;
 
-@mixin elevation($shadow: false) {
+@mixin elevation {
     border: 1px solid mix(c.$surfaceContainer, c.$outline, 90%);
-
-    @if $shadow {
-        box-shadow: 0px 2px 3px c.$shadow;
-    }
 }
 
 @mixin primary($width: 1px) {

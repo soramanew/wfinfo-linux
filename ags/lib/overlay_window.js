@@ -2,7 +2,7 @@ import Gtk from "gi://Gtk";
 import { setupCursorHover, setupCursorHoverMove } from "./cursor_hover.js";
 const { Window, Box, Label, Button, Icon } = Widget;
 
-const setupDrag = (self, name, dimX, dimY, cap = null) => {
+export const setupDrag = (self, name, dimX, dimY, cap = null) => {
     setupCursorHoverMove(self);
 
     const gesture = Gtk.GestureDrag.new(self);
@@ -17,7 +17,7 @@ const setupDrag = (self, name, dimX, dimY, cap = null) => {
                 if (window.attribute[dimX] < cap) window.attribute[dimX] = cap;
                 if (window.attribute[dimY] < cap) window.attribute[dimY] = cap;
             }
-            window.attribute.update(window);
+            window.attribute.update();
         },
         "drag-end"
     );
@@ -53,61 +53,92 @@ const Header = (name, title, icon) =>
 const Content = (name, title, icon, child, header) =>
     Box({
         vertical: true,
-        className: "overlay-window",
         children: [header ? Header(name, title, icon) : null, child],
     });
 
-export default ({ name, child, icon = "", header = true, title = name, setup = () => {}, ...rest }) =>
+export default ({
+    name,
+    child,
+    icon = "",
+    header = true,
+    title = name,
+    className = "",
+    x = 0,
+    y = 0,
+    width = 0,
+    height = 0,
+    setup = () => {},
+    ...rest
+}) =>
     Window({
         ...rest,
         name,
+        className: `overlay-window ${className}`,
         child: Content(name, title, icon, child, header),
         visible: false,
         layer: "overlay",
         exclusivity: "ignore",
         keymode: "on-demand",
-        attribute: {
-            x: 0,
-            y: 0,
-            width: 0,
-            height: 0,
-            update: self => {
-                const { width, height } = self.window.get_display().get_monitor_at_window(self.window).get_geometry();
-                const { x, y, width: w, height: h } = self.attribute;
-                // Top, right, bottom, left
-                self.margins = [y, width - w - x, height - h - y, x];
-            },
-        },
+        attribute: { x, y, width, height },
         setup: self => {
-            let first = true;
-            App.connect("window-toggled", (_, name, visible) => {
+            let id = App.connect("window-toggled", (_, name, visible) => {
                 if (!visible || name !== self.name) return;
 
-                if (first) {
-                    // Change anchor so margins work
-                    self.anchor = ["top", "right", "bottom", "left"];
+                // Only run once
+                App.disconnect(id);
+                id = null;
 
-                    // Size of current monitor
-                    const { width, height } = self.window
-                        .get_display()
-                        .get_monitor_at_window(self.window)
-                        .get_geometry();
+                // Change anchor so margins work
+                self.anchor = ["top", "right", "bottom", "left"];
 
-                    // Set if unset or invalid
-                    if (self.attribute.width <= 0) self.attribute.width = self.get_preferred_width()[1];
-                    if (self.attribute.height <= 0) self.attribute.height = self.get_preferred_height()[1];
+                // Size of current monitor
+                const { width, height } = self.window.get_display().get_monitor_at_window(self.window).get_geometry();
 
-                    // Center
-                    self.attribute.x = (width - self.attribute.width) / 2;
-                    self.attribute.y = (height - self.attribute.height) / 2;
+                const { x, y } = self.attribute;
 
-                    // Only on first open
-                    first = false;
-                }
+                // Set if unset or invalid
+                if (self.attribute.width < 1) self.attribute.width = self.get_preferred_width()[1];
+                if (self.attribute.height < 1) self.attribute.height = self.get_preferred_height()[1];
+
+                // Center or move to position if set and negative
+                if (self.attribute.x === 0) self.attribute.x = (width - self.attribute.width) / 2;
+                else if (self.attribute.x < 0) self.attribute.x += width - self.attribute.width;
+                if (self.attribute.y === 0) self.attribute.y = (height - self.attribute.height) / 2;
+                else if (self.attribute.y < 0) self.attribute.y += height - self.attribute.height;
 
                 // Update
-                self.attribute.update(self);
+                self.attribute.update();
+
+                // Update again after a timeout to update to actually allocated size
+                Utils.timeout(200, () => {
+                    if (x === 0) self.attribute.x = (width - self.attribute.width) / 2;
+                    else if (x < 0) self.attribute.x = width - self.attribute.width + x;
+                    if (y === 0) self.attribute.y = (height - self.attribute.height) / 2;
+                    else if (y < 0) self.attribute.y = height - self.attribute.height + y;
+
+                    self.attribute.update();
+                });
             });
+
+            self.on("size-allocate", () => {
+                // Don't sync if first run has not executed yet cause it'll be 1,1 cause not visible
+                if (id) return;
+
+                // Sync attribute size with real size (cause min sizes and stuff)
+                // Minus 1 cause for some reason it increases by 1
+                self.attribute.width = self.get_allocated_width() - 1;
+                self.attribute.height = self.get_allocated_height() - 1;
+            });
+
+            self.attribute.update = () => {
+                if (id) return;
+
+                const { width, height } = self.window.get_display().get_monitor_at_window(self.window).get_geometry();
+                const { x, y, width: w, height: h } = self.attribute;
+
+                // Top, right, bottom, left
+                self.margins = [y, width - w - x, height - h - y, x];
+            };
 
             // Extra setup
             setup(self);

@@ -6,7 +6,7 @@ export default () =>
         visible: false,
         layer: "overlay",
         exclusivity: "ignore",
-        keymode: "none",
+        keymode: "exclusive",
         anchor: ["left", "top", "right", "bottom"],
         child: Box({ className: "overlay" }),
     });

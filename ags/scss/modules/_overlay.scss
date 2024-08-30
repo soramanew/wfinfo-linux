@@ -14,7 +14,10 @@
 
     background-color: c.$background;
     color: c.$onBackground;
-    padding: 0.68rem 1.02rem;
+
+    & > * {
+        padding: 0.68rem 1.02rem;
+    }
 }
 
 .overlay-window-header {

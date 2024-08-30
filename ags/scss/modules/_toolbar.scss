@@ -4,25 +4,33 @@
 @use "../lib/anim";
 @use "../lib/border";
 
-.toolbar {
-    @include rounding.normal;
-    @include border.elevation(true);
+.toolbar-window > * {
+    padding: 0;
+}
 
-    background-color: c.$background;
-    color: c.$onBackground;
-    margin-bottom: 1.02rem;
+.toolbar {
+    @include font.massive;
+
+    & > :first-child {
+        border-top-left-radius: rounding.$medium;
+        border-bottom-left-radius: rounding.$medium;
+    }
+
+    & > :last-child {
+        margin: 1px;
+        margin-left: 0;
+    }
+}
+
+.toolbar-drag-area {
+    padding-left: 0.476rem;
+    padding-right: 0.272rem;
 }
 
 .toolbar-button {
     @include anim.element-decel;
-    @include font.massive;
 
     padding: 0.68rem 1.02rem;
-
-    &:first-child {
-        border-top-left-radius: rounding.$medium;
-        border-bottom-left-radius: rounding.$medium;
-    }
 
     &:last-child {
         border-top-right-radius: rounding.$medium;

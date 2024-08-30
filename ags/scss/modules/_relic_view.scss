@@ -1,12 +1,21 @@
 @use "../lib/colour" as c;
 @use "../lib/rounding";
 @use "../lib/font";
+@use "../lib/anim";
 
 .relic-view-header {
     @include font.small;
     @include font.main;
 
     margin-bottom: 0.68rem;
+
+    & > * {
+        margin-left: 0.68rem;
+    }
+
+    & > :first-child {
+        margin-left: 0;
+    }
 }
 
 .relic-view-search {
@@ -24,6 +33,45 @@
         @include font.large;
 
         margin-left: 0;
+    }
+}
+
+.relic-view-filter-button {
+    @include rounding.small;
+    @include anim.element-decel;
+
+    background-color: c.$layer1;
+    padding: 0.34rem 0.68rem;
+    color: c.$error;
+
+    &.checked {
+        color: c.$success;
+    }
+
+    // Tick/cross
+    & > * > :last-child {
+        @include font.material;
+
+        font-weight: bold;
+    }
+
+    // Spacing
+    & > * > * {
+        margin-left: 0.272rem;
+    }
+
+    & > * > :first-child {
+        margin-left: 0;
+    }
+
+    // Button states
+    &:hover,
+    &:focus {
+        background-color: c.$layer1Hover;
+    }
+
+    &:active {
+        background-color: c.$layer1Active;
     }
 }
 

@@ -1,7 +1,7 @@
 import { setupCursorHover } from "../lib/cursor_hover.js";
 import { CACHE_DIR } from "../lib/misc.js";
 import OverlayWindow from "../lib/overlay_window.js";
-const { Box, Label, Icon, Button, Revealer, Scrollable, Entry } = Widget;
+const { Box, Label, Icon, Button, Revealer, Scrollable, Entry, ToggleButton } = Widget;
 const { readFile } = Utils;
 
 const resourceDir = `${CACHE_DIR}/../resources`;
@@ -92,19 +92,40 @@ const Relic = relic => {
     });
 };
 
+const FilterButton = ({ label, toggled = false, onToggled = () => {}, ...rest }) =>
+    ToggleButton({
+        ...rest,
+        active: toggled,
+        className: `relic-view-filter-button ${toggled ? "checked" : ""}`,
+        child: Box({ children: [Label(label), Label(toggled ? "check" : "close")] }),
+        onToggled: self => {
+            self.toggleClassName("checked", self.active);
+            self.child.children[1].label = self.active ? "check" : "close";
+            onToggled(self);
+        },
+        setup: setupCursorHover,
+    });
+
 export default () => {
+    let vaulted = true;
     const updateFilter = (tier, matcher = new RegExp(searchEntry.text, "gi")) => {
         let visible = false;
 
         for (const [i, relic] of Object.values(tier.attribute).entries()) {
-            let vis = relic.name.match(matcher) !== null;
+            // Vaulted shows both vaulted and not, vaulted false only shows not
+            const vaultMatch = vaulted || !relic.vaulted;
+            // Match vaulted status and relic name
+            let vis = vaultMatch && relic.name.match(matcher) !== null;
 
-            if (!vis)
+            // Check drops if vaulted status matches and not already visible
+            if (vaultMatch && !vis)
                 for (const rarity of Object.values(relic.drops))
                     for (const drop of rarity) if (drop.match(matcher) !== null) vis = true;
 
+            // Make tier visible if relic visible
             if (vis) visible = true;
 
+            // Change relic widget visibility to vis if not already
             const relicWidget = tier.children[1].child.children[i];
             if (relicWidget && relicWidget.visible !== vis) relicWidget.visible = vis;
         }
@@ -154,17 +175,26 @@ export default () => {
         },
     });
 
+    const search = Box({
+        className: "relic-view-search",
+        children: [Label({ className: "icon-material", label: "search" }), searchEntry],
+    });
+
+    const vaultedFilter = FilterButton({
+        label: "Vaulted",
+        toggled: true,
+        onToggled: ({ active }) => {
+            vaulted = active;
+            for (const tier of list.children) updateFilter(tier);
+        },
+    });
+
     const content = Box({
         vertical: true,
         children: [
             Box({
                 className: "relic-view-header",
-                children: [
-                    Box({
-                        className: "relic-view-search",
-                        children: [Label({ className: "icon-material", label: "search" }), searchEntry],
-                    }),
-                ],
+                children: [search, vaultedFilter],
             }),
             Scrollable({
                 vexpand: true,

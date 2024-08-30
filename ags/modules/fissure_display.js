@@ -1,6 +1,6 @@
 import Cairo from "cairo";
 import { autodetect, logPath as defaultLogPath } from "../config.user.js";
-import { CACHE_DIR, debug, fileExists } from "../lib/misc.js";
+import { CACHE_DIR, debug, fileExists, info } from "../lib/misc.js";
 const { Window, Box, Label, Icon } = Widget;
 const { exec, execAsync, HOME, readFile, writeFile, subprocess } = Utils;
 
@@ -50,7 +50,7 @@ const getLogPath = () => {
     else {
         const foundLogPath = findEELog();
         if (fileExists(foundLogPath)) {
-            console.log(`[INFO] Found EE.log as ${foundLogPath}`);
+            info(`Found EE.log as ${foundLogPath}`);
             logPath = foundLogPath;
         }
     }
@@ -136,7 +136,11 @@ globalThis.trigger = async () => {
     App.openWindow("wfinfo-fissure");
 
     // Update databases async
-    execPython("database").catch(print);
+    execPython("database")
+        .then(out => {
+            if (!out.includes("Ignoring.")) info(out.replace(/.*\u001b\\/, ""));
+        })
+        .catch(print);
 
     // Parse image
     const pyOut = await execPython("parser", `${SCREENSHOT_PATH} ${numRewards}`);
@@ -155,7 +159,7 @@ const rewards = Variable();
 if (autodetect) {
     const logPath = getLogPath();
     if (fileExists(logPath)) {
-        console.log(`[INFO] Monitoring Warframe log at ${logPath}`);
+        info(`Monitoring Warframe log at ${logPath}`);
         subprocess(["tail", "-f", logPath], out => {
             if (
                 out.includes("Pause countdown done") ||

@@ -10,5 +10,6 @@ export const WM_OR_DE = exec("wmctrl -m").split("\n")[0].replace("Name: ", "");
 export const debug = (...msg) => {
     if (debugMode) console.log("[DEBUG]", ...msg);
 };
+export const info = (...msg) => console.log("[INFO]", ...msg);
 
 export const fileExists = filePath => Gio.File.new_for_path(filePath).query_exists(null);

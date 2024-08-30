@@ -1,13 +1,13 @@
 import { debug, WM_OR_DE } from "./misc.js";
 const { execAsync } = Utils;
 
-export const createKeybind = (key, action) => {
+export const createKeybind = (key, action, consuming = true) => {
     if (!key) return;
 
     if (WM_OR_DE.startsWith("Hyprland"))
         // Unbind then rebind to avoid duplicate binds
         execAsync(`hyprctl keyword unbind '${key}'`)
-            .then(() => execAsync(`hyprctl keyword bindn '${key},exec,${action}'`).catch(print))
+            .then(() => execAsync(`hyprctl keyword bind${consuming ? "" : "n"} '${key},exec,${action}'`).catch(print))
             .catch(print);
     else {
         console.log(

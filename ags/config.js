@@ -2,7 +2,7 @@ import GLib from "gi://GLib";
 import GLibUnix from "gi://GLibUnix";
 import { keybinds } from "./config.user.js";
 import { createKeybind, deleteKeybind } from "./lib/keybind.js";
-import { BIN_PATH, CACHE_DIR } from "./lib/misc.js";
+import { BIN_PATH, CACHE_DIR, info } from "./lib/misc.js";
 import FissureDisplay from "./modules/fissure_display.js";
 import Overlay from "./modules/overlay.js";
 import RelicView from "./modules/relic_view.js";
@@ -23,7 +23,9 @@ reloadCss();
 // Update databases on startup
 execAsync(`${BIN_PATH} --update-dbs`)
     // Ugh there are ANSI escape codes in front of the output
-    .then(out => console.log(`[INFO] ${out.replace(/.*\u001b\\/, "")}`))
+    .then(out => {
+        if (!out.includes("Ignoring.")) info(out.replace(/.*\u001b\\/, ""));
+    })
     .catch(print);
 
 // Add icons then config cause if not windows throw errors for not able to find icon
@@ -34,7 +36,7 @@ App.config({
 });
 
 //////////////// Keybind stuff
-createKeybind(keybinds.fissure, `${BIN_PATH} -t`);
+createKeybind(keybinds.fissure, `${BIN_PATH} -t`, false);
 createKeybind(keybinds.gui?.toggle, `${BIN_PATH} -g`);
 
 const deleteKeybinds = () => {

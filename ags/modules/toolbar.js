@@ -23,11 +23,14 @@ const WindowButton = (window, icon, tooltip) =>
         className: "toolbar-button",
         tooltipText: tooltip,
         child: Icon(`${icon}-symbolic`),
-        onClicked: self => {
-            App.toggleWindow(window);
-            self.toggleClassName("toolbar-button-active", App.getWindow(window).visible);
+        onClicked: () => App.toggleWindow(window),
+        setup: self => {
+            setupCursorHover(self);
+
+            self.hook(App, (self, name, visible) => {
+                if (name === window) self.toggleClassName("toolbar-button-active", visible);
+            });
         },
-        setup: setupCursorHover,
     });
 
 const Toolbar = () =>

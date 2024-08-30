@@ -110,7 +110,7 @@ export default ({
                 self.attribute.update();
 
                 // Update again after a timeout to update to actually allocated size
-                Utils.timeout(200, () => {
+                Utils.timeout(500, () => {
                     if (x === 0) self.attribute.x = (width - self.attribute.width) / 2;
                     else if (x < 0) self.attribute.x = width - self.attribute.width + x;
                     if (y === 0) self.attribute.y = (height - self.attribute.height) / 2;

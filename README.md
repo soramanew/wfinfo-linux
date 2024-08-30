@@ -9,8 +9,16 @@ This is a limited remake of [wfinfo](https://wfinfo.warframestat.us) in Python a
 -   Manual trigger detection
 -   Global keybind (Hyprland only)
 -   Display price and volume stats for items
+-   Overlay (like steam overlay)
+-   Relic view with price data
+
+### Fissure reward display:
 
 ![Reward price display](/readme/reward_display.png)
+
+### Relic view in overlay:
+
+![Relic view](/readme/relic_view.png)
 
 ## Requirements
 
@@ -45,6 +53,9 @@ when the buffer is full, the auto detection may be inconsistent.
 The reward display can be manually triggered while running via `wfinfo -t`. If on Hyprland, the program will
 automatically create a shortcut for the trigger script (`F2` by default) on start. This WILL remove any prior binds
 for that key. Otherwise, just create a keybind manually depending on your DE.
+
+The overlay can be toggled with `F3` (if on Hyprland, otherwise set the shortcut manually). All keybinds can be changed
+in `ags/config.user.js`.
 
 ## Configuration
 

@@ -208,7 +208,7 @@ def parse_image(image: Image, num_rewards: int = None) -> list[str]:
             off += line_height
 
         reward = reward.strip()
-        rewards.append(reward if reward in db.items else "INVALID")
+        rewards.append(reward)
 
     return rewards
 
@@ -216,16 +216,19 @@ def parse_image(image: Image, num_rewards: int = None) -> list[str]:
 # Parse given image and output if called as main script
 if __name__ == "__main__":
     with Img.open(sys.argv[1]).convert("RGB") as image:
-        invalid = {
-            "name": "Invalid",
-            "price": {"platinum": 0, "ducats": 0},
-            "sold": {"today": 0, "yesterday": 0},
-        }
-
         print(
             json.dumps(
                 [
-                    (invalid if r == "INVALID" else {"name": r, **db.items[r]})
+                    (
+                        {"name": r, **db.items[r]}
+                        if r in db.items
+                        else {
+                            "name": f"Invalid ({r})",
+                            "price": {"platinum": 0, "ducats": 0},
+                            "sold": {"today": 0, "yesterday": 0},
+                            "vaulted": False,
+                        }
+                    )
                     for r in parse_image(
                         image, int(sys.argv[2]) if len(sys.argv) > 2 else None
                     )

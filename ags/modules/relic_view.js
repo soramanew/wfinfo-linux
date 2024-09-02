@@ -242,12 +242,9 @@ export default () => {
             // Create children on first open
             const id = App.connect("window-toggled", (_, name, visible) => {
                 if (visible && name === "wfinfo-relics") {
-                    // Idle so sizing works
-                    Utils.idle(() => {
-                        // Store in another array cause accessing children by index is extremely slow for some reason
-                        relicWidgets = Object.values(relics).flatMap(r => Object.values(r).map(Relic));
-                        self.children = relicWidgets;
-                    });
+                    // Store in another array cause accessing children by index is extremely slow for some reason
+                    relicWidgets = Object.values(relics).flatMap(r => Object.values(r).map(Relic));
+                    self.children = relicWidgets;
                     App.disconnect(id);
                 }
             });

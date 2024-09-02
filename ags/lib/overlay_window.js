@@ -109,15 +109,18 @@ export default ({
                 // Update
                 self.attribute.update();
 
-                // Update again after a timeout to update to actually allocated size
-                Utils.timeout(500, () => {
-                    if (x === 0) self.attribute.x = (width - self.attribute.width) / 2;
-                    else if (x < 0) self.attribute.x = width - self.attribute.width + x;
-                    if (y === 0) self.attribute.y = (height - self.attribute.height) / 2;
-                    else if (y < 0) self.attribute.y = height - self.attribute.height + y;
+                // Idle so tries to do other on hooks first cause they may cause lag which screws up the timeout (e.g. relic view)
+                Utils.idle(() =>
+                    // Update again after a timeout to update to actually allocated size
+                    Utils.timeout(500, () => {
+                        if (x === 0) self.attribute.x = (width - self.attribute.width) / 2;
+                        else if (x < 0) self.attribute.x = width - self.attribute.width + x;
+                        if (y === 0) self.attribute.y = (height - self.attribute.height) / 2;
+                        else if (y < 0) self.attribute.y = height - self.attribute.height + y;
 
-                    self.attribute.update();
-                });
+                        self.attribute.update();
+                    })
+                );
             });
 
             self.on("size-allocate", () => {

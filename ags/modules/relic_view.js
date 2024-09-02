@@ -105,7 +105,7 @@ const FilterButton = ({ label, toggled = false, onToggled = () => {}, ...rest })
     });
 
 export default () => {
-    let relicWidgets = null;
+    let relicWidgets;
 
     let vaulted = true;
     const updateFilter = () => {
@@ -130,7 +130,7 @@ export default () => {
         vertical: true,
         setup: self => {
             // Create children on first open
-            let id = App.connect("window-toggled", (_, name, visible) => {
+            const id = App.connect("window-toggled", (_, name, visible) => {
                 if (visible && name === "wfinfo-relics") {
                     // Idle so sizing works
                     Utils.idle(() => {

@@ -199,12 +199,12 @@ def _process_prices(
     endings = set()
     new_prices = {
         "Forma Blueprint": {
-            "price": {"platinum": 11.67, "ducats": 0},
+            "price": {"platinum": 5, "ducats": 0},
             "sold": {"today": 0, "yesterday": 0},
             "vaulted": False,
         },
         "2 X Forma Blueprint": {
-            "price": {"platinum": 23.33, "ducats": 0},
+            "price": {"platinum": 10, "ducats": 0},
             "sold": {"today": 0, "yesterday": 0},
             "vaulted": False,
         },

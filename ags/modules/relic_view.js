@@ -108,9 +108,10 @@ const FilterButton = ({ label, toggled = false, onToggled = () => {}, ...rest })
 const SortChooser = (list, updateFilter) => {
     const sorts = ["Default", "Platinum", "Ducats", "Platinum increase"];
     const selected = Variable(sorts[0]);
+    const descending = Variable(false);
     let childFocused = false;
 
-    list.hook(selected, () => {
+    const sort = () => {
         // Ignore init call
         if (!list.children.length) return;
 
@@ -145,12 +146,31 @@ const SortChooser = (list, updateFilter) => {
         }
 
         if (children) {
+            if (descending.value) children.reverse();
             list.children = children;
 
             // Update filter cause changing sort messes it up
             updateFilter();
         }
-    });
+    };
+
+    list.hook(selected, sort);
+    list.hook(descending, sort);
+
+    const closeOnFocusLost = () =>
+        // Idle so child listeners can trigger first then this
+        Utils.idle(() => {
+            if (!childFocused) revealer.revealChild = false;
+        });
+
+    const childBtnSetup = self => {
+        setupCursorHover(self);
+        self.on("focus-in-event", () => (childFocused = true));
+        self.on("focus-out-event", () => {
+            childFocused = false;
+            closeOnFocusLost();
+        });
+    };
 
     const SortButton = sort =>
         Button({
@@ -160,11 +180,7 @@ const SortChooser = (list, updateFilter) => {
                 selected.value = sort;
                 revealer.revealChild = false;
             },
-            setup: self => {
-                setupCursorHover(self);
-                self.on("focus-in-event", () => (childFocused = true));
-                self.on("focus-out-event", () => (childFocused = false));
-            },
+            setup: childBtnSetup,
         });
 
     const revealer = Revealer({
@@ -178,16 +194,19 @@ const SortChooser = (list, updateFilter) => {
         className: "relic-view-sort-chooser",
         children: [
             Button({
+                child: Label({
+                    className: "icon-material",
+                    label: descending.bind().as(d => `expand_${d ? "more" : "less"}`),
+                }),
+                onClicked: () => (descending.value = !descending.value),
+                setup: childBtnSetup,
+            }),
+            Button({
                 child: Label({ label: selected.bind().as(s => `Sort: ${s}`) }),
                 onClicked: () => (revealer.revealChild = !revealer.revealChild),
                 setup: self => {
                     setupCursorHover(self);
-                    self.on("focus-out-event", () =>
-                        // Idle so child listeners can trigger first then this
-                        Utils.idle(() => {
-                            if (!childFocused) revealer.revealChild = false;
-                        })
-                    );
+                    self.on("focus-out-event", closeOnFocusLost);
                 },
             }),
             revealer,

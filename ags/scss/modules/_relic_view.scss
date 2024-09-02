@@ -81,10 +81,11 @@
 
     background-color: c.$layer1;
     color: c.$onLayer1;
-    padding: 0.34rem 0.68rem;
+    padding: 0.34rem;
+    padding-right: 0.68rem;
 
-    // Open button
-    & > :first-child {
+    // Buttons
+    & > * {
         @include anim.element-decel;
 
         &:hover,
@@ -94,6 +95,17 @@
 
         &:active {
             color: mix(c.$onLayer1, c.$layer1, 90%);
+        }
+    }
+
+    // Ascending/descending order button
+    & > :first-child {
+        @include font.norm;
+
+        margin-right: 0.204rem;
+
+        & > * {
+            margin-bottom: -0.068rem;
         }
     }
 }

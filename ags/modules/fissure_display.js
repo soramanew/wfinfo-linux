@@ -138,7 +138,7 @@ globalThis.trigger = async () => {
     // Update databases async
     execPython("database")
         .then(out => {
-            if (!out.includes("Ignoring.")) info(out.replace(/.*\u001b\\/, ""));
+            if (!out.includes("Ignoring.")) info(out.replace(/.*\u001b\\/, "").split("\n")[0]);
         })
         .catch(print);
 

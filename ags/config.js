@@ -24,7 +24,7 @@ reloadCss();
 execAsync(`${BIN_PATH} --update-dbs`)
     // Ugh there are ANSI escape codes in front of the output
     .then(out => {
-        if (!out.includes("Ignoring.")) info(out.replace(/.*\u001b\\/, ""));
+        if (!out.includes("Ignoring.")) info(out.replace(/.*\u001b\\/, "").split("\n")[0]);
     })
     .catch(print);
 

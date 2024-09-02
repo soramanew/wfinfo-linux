@@ -35,7 +35,6 @@ const DropWorth = ({ platinum, ducats }) =>
 
 const Drop = (drop, rarity) =>
     Box({
-        attribute: items[drop],
         className: `relic-drop relic-drop-${rarity}`,
         children: [Label({ hexpand: true, xalign: 0, label: drop }), DropWorth(items[drop].price)],
     });
@@ -60,7 +59,7 @@ const RelicTitle = (relic, dropsRevealer) => {
             className: "relic-title",
             children: [
                 indicator,
-                Label(relic.name),
+                Label(`${relic.tier} ${relic.name}`),
                 Label({ hexpand: true, xalign: 0, className: "subtext", label: relic.vaulted ? "Vaulted" : "" }),
                 RelicWorth(relic.price),
             ],
@@ -85,7 +84,6 @@ const Relic = relic => {
         child: Box({ vertical: true }),
     });
     return Box({
-        attribute: relic,
         vertical: true,
         className: "relic",
         children: [RelicTitle(relic, revealer), revealer],
@@ -107,72 +105,49 @@ const FilterButton = ({ label, toggled = false, onToggled = () => {}, ...rest })
     });
 
 export default () => {
-    let vaulted = true;
-    const updateFilter = (tier, matcher = new RegExp(searchEntry.text, "gi")) => {
-        let visible = false;
+    let relicWidgets = null;
 
-        for (const [i, relic] of Object.values(tier.attribute).entries()) {
+    let vaulted = true;
+    const updateFilter = () => {
+        const matcher = new RegExp(searchEntry.text, "i");
+
+        for (const [i, relic] of Object.values(relics).flatMap(Object.values).entries()) {
             // Vaulted shows both vaulted and not, vaulted false only shows not
             const vaultMatch = vaulted || !relic.vaulted;
             // Match vaulted status and relic name
-            let vis = vaultMatch && relic.name.match(matcher) !== null;
+            let vis = vaultMatch && matcher.test(`${relic.tier} ${relic.name}`);
 
             // Check drops if vaulted status matches and not already visible
             if (vaultMatch && !vis)
-                for (const rarity of Object.values(relic.drops))
-                    for (const drop of rarity) if (drop.match(matcher) !== null) vis = true;
+                vis = Object.values(relic.drops).some(rarity => rarity.some(drop => matcher.test(drop)));
 
-            // Make tier visible if relic visible
-            if (vis) visible = true;
-
-            // Change relic widget visibility to vis if not already
-            const relicWidget = tier.children[1].child.children[i];
-            if (relicWidget && relicWidget.visible !== vis) relicWidget.visible = vis;
+            // Change relic widget visibility
+            relicWidgets[i].visible = vis;
         }
-
-        if (tier.visible !== visible) tier.visible = visible;
     };
 
-    const Tier = ([tier, relics]) => {
-        const revealer = Revealer({
-            transition: "slide_down",
-            transitionDuration: 300,
-            revealChild: false,
-            child: Box({ vertical: true }),
-        });
-        const indicator = ExpandIndicator();
-        const self = Box({
-            attribute: relics,
-            vertical: true,
-            className: "relic-tier",
-            children: [
-                Button({
-                    child: Box({ children: [indicator, Label({ hexpand: true, xalign: 0, label: tier })] }),
-                    onClicked: () => {
-                        if (!revealer.child.children.length) {
-                            revealer.child.children = Object.values(relics).map(Relic);
-                            updateFilter(self);
-                        }
-                        revealer.revealChild = !revealer.revealChild;
-                        indicator.toggle(revealer.revealChild);
-                    },
-                    setup: setupCursorHover,
-                }),
-                revealer,
-            ],
-        });
-        return self;
-    };
-
-    const list = Box({ vertical: true, children: Object.entries(relics).map(Tier) });
+    const list = Box({
+        vertical: true,
+        setup: self => {
+            // Create children on first open
+            let id = App.connect("window-toggled", (_, name, visible) => {
+                if (visible && name === "wfinfo-relics") {
+                    // Idle so sizing works
+                    Utils.idle(() => {
+                        // Store in another array cause accessing children by index is extremely slow for some reason
+                        relicWidgets = Object.values(relics).flatMap(r => Object.values(r).map(Relic));
+                        self.children = relicWidgets;
+                    });
+                    App.disconnect(id);
+                }
+            });
+        },
+    });
 
     const searchEntry = Entry({
         hexpand: true,
         placeholderText: "Filter by name/drops",
-        onChange: ({ text }) => {
-            const matcher = new RegExp(text, "gi");
-            for (const tier of list.children) updateFilter(tier, matcher);
-        },
+        onChange: updateFilter,
     });
 
     const search = Box({
@@ -185,7 +160,7 @@ export default () => {
         toggled: true,
         onToggled: ({ active }) => {
             vaulted = active;
-            for (const tier of list.children) updateFilter(tier);
+            updateFilter();
         },
     });
 

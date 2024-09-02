@@ -75,25 +75,6 @@
     }
 }
 
-.relic-tier {
-    @include rounding.normal;
-    @include font.title;
-    @include font.large;
-
-    background-color: c.$layer1;
-    color: c.$onLayer1;
-    padding: 0.68rem 1.02rem;
-    margin-top: 0.68rem;
-
-    &:first-child {
-        margin-top: 0;
-    }
-
-    & > :first-child > * > :first-child {
-        margin-right: 0.68rem;
-    }
-}
-
 .relic {
     @include rounding.small;
     @include font.norm;
@@ -104,7 +85,7 @@
     margin-top: 0.34rem;
 
     &:first-child {
-        margin-top: 0.68rem;
+        margin-top: 0;
     }
 }
 

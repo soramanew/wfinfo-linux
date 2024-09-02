@@ -75,6 +75,48 @@
     }
 }
 
+.relic-view-sort-chooser {
+    @include rounding.small;
+    @include anim.element-decel;
+
+    background-color: c.$layer1;
+    color: c.$onLayer1;
+    padding: 0.34rem 0.68rem;
+
+    // Open button
+    & > :first-child {
+        @include anim.element-decel;
+
+        &:hover,
+        &:focus {
+            color: c.$onLayer0;
+        }
+
+        &:active {
+            color: mix(c.$onLayer1, c.$layer1, 90%);
+        }
+    }
+}
+
+.relic-view-sort-button {
+    @include anim.element-decel;
+
+    color: c.$subtext;
+    margin-left: 0.544rem;
+    padding-left: 0.544rem;
+    border-left: 0.068rem solid c.$subtext;
+
+    // Button states
+    &:hover,
+    &:focus {
+        color: c.$onLayer1;
+    }
+
+    &:active {
+        color: c.$onLayer0;
+    }
+}
+
 .relic {
     @include rounding.small;
     @include font.norm;

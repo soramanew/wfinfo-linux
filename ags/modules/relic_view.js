@@ -37,15 +37,21 @@ const Drop = (drop, rarity) => {
     const wikiLink = `https://warframe.fandom.com/wiki/${drop
         .replace(" Blueprint", "")
         .replace(/(?<=Prime).*/, "")
-        .replace(" ", "_")}`;
+        .replaceAll(" ", "_")}`;
+    const marketLink = `https://warframe.market/items/${drop.replaceAll(" ", "_").toLowerCase()}`;
+
+    const LinkItem = (label, link) =>
+        MenuItem({
+            child: Label({ xalign: 0, label, tooltipText: link }),
+            onActivate: () => execAsync(["xdg-open", link]).catch(print),
+        });
     const menu = Menu({
         children: [
-            MenuItem({
-                child: Label({ xalign: 0, label: "Open in Wiki", tooltipText: wikiLink }),
-                onActivate: () => execAsync(["xdg-open", wikiLink]).catch(print),
-            }),
+            LinkItem("Open in wiki", wikiLink),
+            drop.includes("Forma") ? null : LinkItem("Open in warframe.market", marketLink),
         ],
     });
+
     return Button({
         child: Box({
             className: `relic-drop relic-drop-${rarity}`,
@@ -75,7 +81,7 @@ const RelicTitle = (relic, dropsRevealer) => {
     const menu = Menu({
         children: [
             MenuItem({
-                child: Label({ xalign: 0, label: "Open in Wiki", tooltipText: wikiLink }),
+                child: Label({ xalign: 0, label: "Open in wiki", tooltipText: wikiLink }),
                 onActivate: () => execAsync(["xdg-open", wikiLink]).catch(print),
             }),
         ],

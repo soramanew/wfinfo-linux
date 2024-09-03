@@ -214,27 +214,88 @@ const SortChooser = (list, updateFilter) => {
     });
 };
 
+const EraFilter = selected => {
+    const eras = ["All", "Lith", "Meso", "Neo", "Axi"];
+    selected.value = eras[0];
+    let childFocused = false;
+
+    const closeOnFocusLost = () =>
+        // Idle so child listeners can trigger first then this
+        Utils.idle(() => {
+            if (!childFocused) revealer.revealChild = false;
+        });
+
+    const childBtnSetup = self => {
+        setupCursorHover(self);
+        self.on("focus-in-event", () => (childFocused = true));
+        self.on("focus-out-event", () => {
+            childFocused = false;
+            closeOnFocusLost();
+        });
+    };
+
+    const EraButton = tier =>
+        Button({
+            className: "relic-view-era-button",
+            child: Label(tier),
+            onClicked: () => {
+                selected.value = tier;
+                revealer.revealChild = false;
+            },
+            setup: childBtnSetup,
+        });
+
+    const revealer = Revealer({
+        transition: "slide_right",
+        transitionDuration: 150,
+        revealChild: false,
+        child: Box({ children: selected.bind().as(s => eras.filter(e => e !== s).map(EraButton)) }),
+    });
+
+    return Box({
+        className: "relic-view-era-filter",
+        children: [
+            Button({
+                child: Label({ label: selected.bind().as(s => `Era: ${s}`) }),
+                onClicked: () => (revealer.revealChild = !revealer.revealChild),
+                setup: self => {
+                    setupCursorHover(self);
+                    self.on("focus-out-event", closeOnFocusLost);
+                },
+            }),
+            revealer,
+        ],
+    });
+};
+
 export default () => {
     let relicWidgets;
 
-    let vaulted = true;
+    const vaulted = Variable(true);
+    const era = Variable();
     const updateFilter = () => {
+        if (!relicWidgets) return;
+
         const matcher = new RegExp(searchEntry.text, "i");
 
         for (const [i, relic] of Object.values(relics).flatMap(Object.values).entries()) {
             // Vaulted shows both vaulted and not, vaulted false only shows not
-            const vaultMatch = vaulted || !relic.vaulted;
+            const vaultMatch = vaulted.value || !relic.vaulted;
+            const eraMatch = era.value === "All" || era.value === relic.tier;
             // Match vaulted status and relic name
-            let vis = vaultMatch && matcher.test(`${relic.tier} ${relic.name}`);
+            let vis = vaultMatch && eraMatch && matcher.test(`${relic.tier} ${relic.name}`);
 
             // Check drops if vaulted status matches and not already visible
-            if (vaultMatch && !vis)
+            if (vaultMatch && eraMatch && !vis)
                 vis = Object.values(relic.drops).some(rarity => rarity.some(drop => matcher.test(drop)));
 
             // Change relic widget visibility
             relicWidgets[i].visible = vis;
         }
     };
+
+    vaulted.connect("changed", updateFilter);
+    era.connect("changed", updateFilter);
 
     const list = Box({
         vertical: true,
@@ -265,10 +326,7 @@ export default () => {
     const vaultedFilter = FilterButton({
         label: "Vaulted",
         toggled: true,
-        onToggled: ({ active }) => {
-            vaulted = active;
-            updateFilter();
-        },
+        onToggled: ({ active }) => (vaulted.value = active),
     });
 
     const content = Box({
@@ -276,7 +334,7 @@ export default () => {
         children: [
             Box({
                 className: "relic-view-header",
-                children: [search, vaultedFilter, SortChooser(list, updateFilter)],
+                children: [search, vaultedFilter, SortChooser(list, updateFilter), EraFilter(era)],
             }),
             Scrollable({
                 vexpand: true,

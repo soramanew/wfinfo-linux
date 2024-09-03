@@ -3,22 +3,34 @@ import Gtk from "gi://Gtk";
 import { setupCursorHover, setupCursorHoverMove } from "./cursor_hover.js";
 const { Window, Box, Label, Button, Icon } = Widget;
 
-export const setupDrag = (self, name, dimX, dimY, cap = null) => {
+export const setupDrag = (self, name, xDims, yDims, min = null) => {
     setupCursorHoverMove(self);
 
     const gesture = Gtk.GestureDrag.new(self);
     self.hook(
         gesture,
         () => {
-            const [, xOff, yOff] = gesture.get_offset();
             const window = App.getWindow(name);
             if (!window.visible) return; // Only set when visible (to prevent init call)
-            window.attribute[dimX] += xOff;
-            window.attribute[dimY] += yOff;
-            if (cap !== null) {
-                if (window.attribute[dimX] < cap) window.attribute[dimX] = cap;
-                if (window.attribute[dimY] < cap) window.attribute[dimY] = cap;
+
+            const [, xOff, yOff] = gesture.get_offset();
+
+            for (const dimOpt of typeof xDims === "string" ? [xDims] : xDims) {
+                let dim = dimOpt;
+                let mul = 1;
+                if (typeof dimOpt !== "string") [dim, mul] = dimOpt;
+                window.attribute[dim] += xOff * mul;
+                if (min !== null && window.attribute[dim] < min) window.attribute[dim] = min;
             }
+
+            for (const dimOpt of typeof yDims === "string" ? [yDims] : yDims) {
+                let dim = dimOpt;
+                let mul = 1;
+                if (typeof dimOpt !== "string") [dim, mul] = dimOpt;
+                window.attribute[dim] += yOff * mul;
+                if (min !== null && window.attribute[dim] < min) window.attribute[dim] = min;
+            }
+
             window.attribute.update();
         },
         "drag-end"
@@ -43,7 +55,10 @@ const Header = (name, title, icon) =>
                 child: Box({ children: [icon ? Icon(`${icon}-symbolic`) : null, Label({ xalign: 0, label: title })] }),
                 setup: self => setupDrag(self, name, "x", "y"),
             }),
-            HeaderButton({ icon: "open_in_full", setup: self => setupDrag(self, name, "width", "height", 1) }),
+            HeaderButton({
+                icon: "open_in_full",
+                setup: self => setupDrag(self, name, "width", [["height", -1], "y"], 1),
+            }),
             HeaderButton({
                 icon: "close",
                 onClicked: () => App.closeWindow(name),

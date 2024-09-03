@@ -33,7 +33,7 @@ export const setupDrag = (self, name, xDims, yDims, min = null) => {
 
             window.attribute.update();
         },
-        "drag-end"
+        "drag-update"
     );
 };
 

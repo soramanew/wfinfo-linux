@@ -1,3 +1,4 @@
+import GLib from "gi://GLib";
 import Gtk from "gi://Gtk";
 import { setupCursorHover, setupCursorHoverMove } from "./cursor_hover.js";
 const { Window, Box, Label, Button, Icon } = Widget;
@@ -120,7 +121,7 @@ export default ({
                 updatePosition();
 
                 // Update again after a timeout to update to actually allocated size
-                Utils.timeout(500, updatePosition);
+                Utils.idle(() => Utils.timeout(500, updatePosition), GLib.PRIORITY_DEFAULT_IDLE);
             });
 
             self.on("size-allocate", () => {

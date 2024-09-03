@@ -1,8 +1,8 @@
 import { setupCursorHover } from "../lib/cursor_hover.js";
 import { CACHE_DIR } from "../lib/misc.js";
 import OverlayWindow from "../lib/overlay_window.js";
-const { Box, Label, Icon, Button, Revealer, Scrollable, Entry, ToggleButton } = Widget;
-const { readFile } = Utils;
+const { Box, Label, Icon, Button, Revealer, Scrollable, Entry, ToggleButton, Menu, MenuItem } = Widget;
+const { readFile, execAsync } = Utils;
 
 const resourceDir = `${CACHE_DIR}/../resources`;
 const items = JSON.parse(readFile(`${resourceDir}/prices.json`));
@@ -33,11 +33,28 @@ const DropWorth = ({ platinum, ducats }) =>
         ],
     });
 
-const Drop = (drop, rarity) =>
-    Box({
-        className: `relic-drop relic-drop-${rarity}`,
-        children: [Label({ hexpand: true, xalign: 0, label: drop }), DropWorth(items[drop].price)],
+const Drop = (drop, rarity) => {
+    const wikiLink = `https://warframe.fandom.com/wiki/${drop
+        .replace(" Blueprint", "")
+        .replace(/(?<=Prime).*/, "")
+        .replace(" ", "_")}`;
+    const menu = Menu({
+        children: [
+            MenuItem({
+                child: Label({ xalign: 0, label: "Open in Wiki", tooltipText: wikiLink }),
+                onActivate: () => execAsync(["xdg-open", wikiLink]).catch(print),
+            }),
+        ],
     });
+    return Button({
+        child: Box({
+            className: `relic-drop relic-drop-${rarity}`,
+            children: [Label({ hexpand: true, xalign: 0, label: drop }), DropWorth(items[drop].price)],
+        }),
+        onSecondaryClickRelease: (_, event) => menu.popup_at_pointer(event),
+        setup: self => menu.attach_to_widget(self, null),
+    });
+};
 
 const RelicWorth = ({ intact, radiant }) => {
     // Ugh why is it so annoying to round
@@ -54,6 +71,15 @@ const RelicWorth = ({ intact, radiant }) => {
 
 const RelicTitle = (relic, dropsRevealer) => {
     const indicator = ExpandIndicator();
+    const wikiLink = `https://warframe.fandom.com/wiki/${relic.tier}_${relic.name}`;
+    const menu = Menu({
+        children: [
+            MenuItem({
+                child: Label({ xalign: 0, label: "Open in Wiki", tooltipText: wikiLink }),
+                onActivate: () => execAsync(["xdg-open", wikiLink]).catch(print),
+            }),
+        ],
+    });
     return Button({
         child: Box({
             className: "relic-title",
@@ -72,7 +98,11 @@ const RelicTitle = (relic, dropsRevealer) => {
             dropsRevealer.revealChild = !dropsRevealer.revealChild;
             indicator.toggle(dropsRevealer.revealChild);
         },
-        setup: setupCursorHover,
+        onSecondaryClickRelease: (_, event) => menu.popup_at_pointer(event),
+        setup: self => {
+            setupCursorHover(self);
+            menu.attach_to_widget(self, null);
+        },
     });
 };
 

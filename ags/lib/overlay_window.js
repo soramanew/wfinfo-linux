@@ -11,6 +11,7 @@ export const setupDrag = (self, name, dimX, dimY, cap = null) => {
         () => {
             const [, xOff, yOff] = gesture.get_offset();
             const window = App.getWindow(name);
+            if (!window.visible) return; // Only set when visible (to prevent init call)
             window.attribute[dimX] += xOff;
             window.attribute[dimY] += yOff;
             if (cap !== null) {
@@ -96,36 +97,35 @@ export default ({
 
                 const { x, y } = self.attribute;
 
-                // Set if unset or invalid
-                if (self.attribute.width < 1) self.attribute.width = self.get_preferred_width()[1];
-                if (self.attribute.height < 1) self.attribute.height = self.get_preferred_height()[1];
+                // Set if unset or invalid, use default size if set else preferred size
+                const [dWidth, dHeight] = self.get_default_size();
+                if (self.attribute.width < 1)
+                    self.attribute.width = dWidth !== -1 ? dWidth : self.get_preferred_width()[1];
+                if (self.attribute.height < 1)
+                    self.attribute.height = dHeight !== -1 ? dHeight : self.get_preferred_height()[1];
 
                 // Center or move to position if set and negative
-                if (self.attribute.x === 0) self.attribute.x = (width - self.attribute.width) / 2;
-                else if (self.attribute.x < 0) self.attribute.x += width - self.attribute.width;
-                if (self.attribute.y === 0) self.attribute.y = (height - self.attribute.height) / 2;
-                else if (self.attribute.y < 0) self.attribute.y += height - self.attribute.height;
+                const updatePosition = () => {
+                    if (x === 0) self.attribute.x = (width - self.attribute.width) / 2;
+                    else if (x < 0) self.attribute.x = width - self.attribute.width + x;
+                    else self.attribute.x = x;
+                    if (y === 0) self.attribute.y = (height - self.attribute.height) / 2;
+                    else if (y < 0) self.attribute.y = height - self.attribute.height + y;
+                    else self.attribute.x = x;
 
-                // Update
-                self.attribute.update();
+                    self.attribute.update();
+                };
 
-                // Idle so tries to do other on hooks first cause they may cause lag which screws up the timeout (e.g. relic view)
-                Utils.idle(() =>
-                    // Update again after a timeout to update to actually allocated size
-                    Utils.timeout(500, () => {
-                        if (x === 0) self.attribute.x = (width - self.attribute.width) / 2;
-                        else if (x < 0) self.attribute.x = width - self.attribute.width + x;
-                        if (y === 0) self.attribute.y = (height - self.attribute.height) / 2;
-                        else if (y < 0) self.attribute.y = height - self.attribute.height + y;
+                // Initial update
+                updatePosition();
 
-                        self.attribute.update();
-                    })
-                );
+                // Update again after a timeout to update to actually allocated size
+                Utils.timeout(500, updatePosition);
             });
 
             self.on("size-allocate", () => {
                 // Don't sync if first run has not executed yet cause it'll be 1,1 cause not visible
-                if (id) return;
+                if (id !== null) return;
 
                 // Sync attribute size with real size (cause min sizes and stuff)
                 // Minus 1 cause for some reason it increases by 1
@@ -134,7 +134,7 @@ export default ({
             });
 
             self.attribute.update = () => {
-                if (id) return;
+                if (id !== null) return;
 
                 const { width, height } = self.window.get_display().get_monitor_at_window(self.window).get_geometry();
                 const { x, y, width: w, height: h } = self.attribute;

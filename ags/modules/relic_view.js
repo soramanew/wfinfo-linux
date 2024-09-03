@@ -295,8 +295,7 @@ export default () => {
         setup: self =>
             Utils.timeout(1, () => {
                 const height = self.window.get_display().get_monitor_at_window(self.window).get_geometry().height * 0.7;
-                self.attribute.width = (height / 3) * 4;
-                self.attribute.height = height;
+                self.set_default_size((height / 3) * 4, height);
             }),
     });
 };

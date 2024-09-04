@@ -18,18 +18,18 @@ or exit
 if set -q _flag_h
     echo 'Usage:'
     echo '    '$script_name
-    echo '    '$script_name' [ -q | --quit ]'
-    echo '    '$script_name' [ -h | --help ]'
-    echo '    '$script_name' [ -t | --trigger ]'
-    echo '    '$script_name' [ -g | --toggle-gui ]'
-    echo '    '$script_name' [ --reload-css ]'
-    echo '    '$script_name' [ --update-dbs ]'
+    echo '    '$script_name' (-h | --help)'
+    echo '    '$script_name' (-q | --quit)'
+    echo '    '$script_name' (-t | --trigger)'
+    echo '    '$script_name' (-g | --toggle-gui)'
+    echo '    '$script_name' --reload-css'
+    echo '    '$script_name' --update-dbs'
     echo
     echo 'Options:'
     echo '    -h, --help            Print this help message and exit'
     echo '    -q, --quit            Quit the application'
     echo '    -t, --trigger         Trigger manual fissure rewards detection'
-    echo '    -g, --toggle-gui      Toggle the GUI layers'
+    echo '    -g, --toggle-gui      Toggle GUI overlay layers'
     echo '    --reload-css          Reload GUI styles'
     echo '    --update-dbs          Update relic, item and price databases'
 

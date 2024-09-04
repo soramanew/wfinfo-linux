@@ -7,6 +7,8 @@
         "bindn",
         "compatdata",
         "decel",
+        "distro",
+        "distros",
         "dtype",
         "eqmt",
         "fromarray",

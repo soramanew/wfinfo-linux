@@ -36,13 +36,12 @@ This is a limited remake of [wfinfo](https://wfinfo.warframestat.us) in Python a
 
 ## Installation
 
-Clone this repo and install all dependencies.
+Clone this repo and run the install script. If not on an Arch-based distro or not using the `yay` AUR helper, you must
+install all dependencies manually. The script will attempt to add the script to your path if `~/.local/bin` is in your
+path, otherwise optionally add it to your path by symlinking the `wfinfo` script to your path directory.
 
-On Arch Linux (using `yay` AUR helper):
-
-```sh
-yay -S --needed python tesseract-data-eng tesseract aylurs-gtk-shell-git dart-sass grim wlr-randr wmctrl fish
-```
+> [!WARNING]
+> Do not copy the script, only symlink it. The script depends on its real location to resolve paths.
 
 ## Usage
 

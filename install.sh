@@ -2,6 +2,18 @@
 
 cd (dirname (status filename)) || exit
 
+function output -a text
+    set_color cyan
+    # Pass arguments other than text to echo
+    echo $argv[2..] -- ":: $text"
+    set_color normal
+end
+
+if which yay >/dev/null
+    output 'Installing dependencies via yay...'
+    yay -S --needed python tesseract-data-eng tesseract aylurs-gtk-shell-git dart-sass grim wlr-randr wmctrl
+end
+
 # Link main script to local PATH if in PATH
 set bin_path ~/.local/bin
 if contains $bin_path $PATH
@@ -13,13 +25,13 @@ if contains $bin_path $PATH
     if test -L $link_path
         # Link is not to this file
         if test "$(realpath $link_path)" != "$real_path"
-            echo "Link $link_path already exists to $(realpath $link_path). Remove existing link to install."
+            output "Link $link_path already exists to $(realpath $link_path). Remove existing link to install."
         else
-            echo "Link already created. Ignoring."
+            output "Link already created. Ignoring."
         end
     else
         # Install link
-        echo "Installing link from $real_path to $link_path"
+        output "Installing link from $real_path to $link_path..."
         ln -s $real_path $link_path
     end
 end
@@ -28,5 +40,7 @@ end
 set -q XDG_DATA_HOME && set data_dir $XDG_DATA_HOME || set data_dir ~/.local/share
 set completions_dir $data_dir/fish/generated_completions
 mkdir -p $completions_dir
-echo "Installing fish completions to $completions_dir"
+output "Installing fish completions to $completions_dir..."
 cp -r completions/. $completions_dir
+
+output 'Done!'
